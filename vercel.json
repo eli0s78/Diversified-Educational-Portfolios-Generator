@@ -1,0 +1,11 @@
+{
+  "buildCommand": "next build",
+  "outputDirectory": ".next",
+  "framework": "nextjs",
+  "functions": {
+    "api/optimize.py": {
+      "runtime": "python3.10",
+      "maxDuration": 30
+    }
+  }
+}

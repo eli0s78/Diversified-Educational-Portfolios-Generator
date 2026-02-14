@@ -2,25 +2,96 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0f172a;
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --primary-hover: #1d4ed8;
+  --secondary: #64748b;
+  --accent: #f59e0b;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --border: #e2e8f0;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --success: #22c55e;
+  --danger: #ef4444;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+
+  /* 6 Training Direction colors */
+  --direction-1: #3b82f6; /* blue — new technologies */
+  --direction-2: #8b5cf6; /* violet — trend analysis */
+  --direction-3: #f59e0b; /* amber — sales techniques */
+  --direction-4: #ef4444; /* red — negotiation/HR */
+  --direction-5: #22c55e; /* green — personal growth theory */
+  --direction-6: #06b6d4; /* cyan — personal growth practical */
+
+  --ring: #2563eb;
+  --radius: 0.75rem;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-ring: var(--ring);
+
+  --color-direction-1: var(--direction-1);
+  --color-direction-2: var(--direction-2);
+  --color-direction-3: var(--direction-3);
+  --color-direction-4: var(--direction-4);
+  --color-direction-5: var(--direction-5);
+  --color-direction-6: var(--direction-6);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --radius: 0.75rem;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0f172a;
+    --foreground: #f1f5f9;
+    --primary: #3b82f6;
+    --primary-foreground: #ffffff;
+    --primary-hover: #60a5fa;
+    --secondary: #94a3b8;
+    --accent: #fbbf24;
+    --muted: #1e293b;
+    --muted-foreground: #94a3b8;
+    --border: #334155;
+    --card: #1e293b;
+    --card-foreground: #f1f5f9;
+    --success: #4ade80;
+    --danger: #f87171;
+    --destructive: #f87171;
+    --destructive-foreground: #ffffff;
+
+    --direction-1: #60a5fa;
+    --direction-2: #a78bfa;
+    --direction-3: #fbbf24;
+    --direction-4: #f87171;
+    --direction-5: #4ade80;
+    --direction-6: #22d3ee;
+
+    --ring: #3b82f6;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }

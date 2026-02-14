@@ -39,3 +39,22 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# sample data & reports (user-uploaded content)
+*.pdf
+*.csv
+!public/**
+
+# workspace files
+*.code-workspace
+
+# misc artifacts
+nul
+academics_specialties.txt
+skills_list.md
+
+# database files
+**/*.db
+**/*.db-shm
+**/*.db-wal
+*.sqlite
