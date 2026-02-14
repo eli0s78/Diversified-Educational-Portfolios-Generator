@@ -3,9 +3,6 @@
   "outputDirectory": ".next",
   "framework": "nextjs",
   "functions": {
-    "api/optimize.py": {
-      "maxDuration": 30
-    },
     "app/api/verify-key/route.ts": {
       "maxDuration": 30
     },
