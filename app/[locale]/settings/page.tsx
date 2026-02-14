@@ -124,7 +124,20 @@ export default function SettingsPage() {
           apiKey: settings.apiKey.trim(),
         }),
       });
-      const data = await res.json();
+      if (res.status === 504) {
+        setVerifyError("Request timed out. Please try again.");
+        setVerifying(false);
+        return;
+      }
+      const text = await res.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        setVerifyError(`Server error (${res.status}). Please try again.`);
+        setVerifying(false);
+        return;
+      }
       if (data.valid) {
         setVerifiedModel(data.model);
         setVerifiedTier(data.tier ?? null);
@@ -149,8 +162,13 @@ export default function SettingsPage() {
         setSavedSnapshot(cleared);
         setSettings(cleared);
       }
-    } catch {
-      setVerifyError("Connection failed. Check your internet connection.");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "";
+      if (msg.includes("abort") || msg.includes("timeout")) {
+        setVerifyError("Request timed out. The server may be busy — please try again.");
+      } else {
+        setVerifyError("Connection failed. Check your internet connection.");
+      }
     } finally {
       setVerifying(false);
     }

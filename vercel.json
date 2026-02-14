@@ -5,6 +5,15 @@
   "functions": {
     "api/optimize.py": {
       "maxDuration": 30
+    },
+    "app/api/verify-key/route.ts": {
+      "maxDuration": 30
+    },
+    "app/api/analyze/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/generate/route.ts": {
+      "maxDuration": 60
     }
   }
 }
