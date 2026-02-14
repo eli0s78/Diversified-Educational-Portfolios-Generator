@@ -55,6 +55,7 @@ export default function PortfolioPage() {
   const [selectedFrontierIdx, setSelectedFrontierIdx] = useState<number | null>(null);
   const [noAnalysis, setNoAnalysis] = useState(false);
   const hasOptimized = useRef(false);
+  const skipAutoOptimize = useRef(false);
 
   // Restore saved portfolio results on mount
   useEffect(() => {
@@ -141,11 +142,33 @@ export default function PortfolioPage() {
   // Auto-optimize when slider changes (only after first manual optimize)
   useEffect(() => {
     if (!hasOptimized.current) return;
+    if (skipAutoOptimize.current) {
+      skipAutoOptimize.current = false;
+      return;
+    }
     const timer = setTimeout(() => {
       optimize();
     }, 500);
     return () => clearTimeout(timer);
   }, [riskTolerance, optimize]);
+
+  // Handle frontier dot click — sync slider to reflect the selected point
+  const handleFrontierSelect = useCallback((idx: number) => {
+    if (!result) return;
+    setSelectedFrontierIdx(idx);
+
+    const frontier = result.frontier;
+    if (frontier.length < 2) return;
+    const minRisk = frontier[0].risk;
+    const maxRisk = frontier[frontier.length - 1].risk;
+    if (maxRisk - minRisk < 1e-8) return;
+
+    const dotRisk = frontier[idx].risk;
+    const sliderValue = (dotRisk - minRisk) / (maxRisk - minRisk);
+
+    skipAutoOptimize.current = true;
+    setRiskTolerance(Math.max(0, Math.min(1, sliderValue)));
+  }, [result]);
 
   const activeWeights = selectedFrontierIdx !== null && result
     ? result.frontier[selectedFrontierIdx].weights
@@ -192,9 +215,12 @@ export default function PortfolioPage() {
 
       {/* Risk Tolerance Slider */}
       <div className="mb-8 rounded-xl border border-border bg-card p-6">
-        <label className="mb-3 block text-sm font-semibold">
+        <label className="mb-1 block text-sm font-semibold">
           {t("risk_tolerance")}
         </label>
+        <p className="mb-3 text-xs text-muted-foreground">
+          {t("risk_hint")}
+        </p>
         <input
           type="range"
           min={0}
@@ -216,23 +242,30 @@ export default function PortfolioPage() {
           </span>
         </div>
 
-        <button
-          onClick={optimize}
-          disabled={loading}
-          className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-6 py-2.5 font-semibold text-white transition-colors hover:bg-primary-hover disabled:opacity-60"
-        >
-          {loading ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              {locale === "el" ? "Βελτιστοποίηση..." : "Optimizing..."}
-            </>
-          ) : (
-            <>
-              <BarChart3 className="h-4 w-4" />
-              {t("optimize")}
-            </>
-          )}
-        </button>
+        {!result && (
+          <>
+            <p className="mt-4 mb-2 text-xs text-muted-foreground">
+              {t("optimize_hint")}
+            </p>
+            <button
+              onClick={optimize}
+              disabled={loading}
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-6 py-2.5 font-semibold text-white transition-colors hover:bg-primary-hover disabled:opacity-60"
+            >
+            {loading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                {locale === "el" ? "Βελτιστοποίηση..." : "Optimizing..."}
+              </>
+            ) : (
+              <>
+                <BarChart3 className="h-4 w-4" />
+                {t("optimize")}
+              </>
+            )}
+            </button>
+          </>
+        )}
       </div>
 
       {result && (
@@ -284,7 +317,7 @@ export default function PortfolioPage() {
               <EfficientFrontier
                 frontier={result.frontier}
                 selectedIdx={selectedFrontierIdx}
-                onSelect={setSelectedFrontierIdx}
+                onSelect={handleFrontierSelect}
                 optimumIdx={result.frontier.findIndex(
                   (p) =>
                     Math.abs(p.risk - result.selectedPortfolio.risk) < 0.001

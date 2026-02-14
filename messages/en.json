@@ -56,7 +56,10 @@
     "get_started_subtitle": "Set up your AI provider to begin",
     "learn_more": "Learn More",
     "ai_configured": "AI configured",
-    "no_ai_configured": "No AI configured yet"
+    "no_ai_configured": "No AI configured yet",
+    "view_all_projects": "View All Projects",
+    "api_key_warning": "No AI provider configured",
+    "api_key_warning_action": "Set up your API key in Settings to start generating programs"
   },
   "upload": {
     "title": "Upload Data",
@@ -120,6 +123,8 @@
     "generate_btn": "Generate E-Learning Program",
     "portfolio_comparison": "Portfolio Comparison",
     "optimize": "Optimize",
+    "risk_hint": "Lower risk diversifies training evenly; higher risk concentrates on fewer, high-impact directions.",
+    "optimize_hint": "Find the best allocation of training directions for your chosen risk level.",
     "no_analysis": "No analysis data found. Please upload data and run the pipeline first."
   },
   "courses": {
@@ -167,7 +172,24 @@
     "delete": "Delete",
     "confirm_delete": "Delete this project? This cannot be undone.",
     "last_updated": "Updated",
-    "open": "Open"
+    "open": "Open",
+    "subtitle": "Manage your educational portfolio projects",
+    "created": "Created",
+    "no_projects": "No projects yet. Create your first project to get started.",
+    "rename": "Rename",
+    "rename_placeholder": "Project name",
+    "delete_title": "Delete Project",
+    "delete_message": "Are you sure you want to delete this project? This action cannot be undone.",
+    "delete_confirm": "Delete",
+    "delete_cancel": "Cancel",
+    "back": "Back to Home",
+    "importing": "Importing...",
+    "import_success_title": "Project Imported",
+    "import_success_message": "'{name}' has been loaded successfully. You can continue working on it now.",
+    "import_error_title": "Import Failed",
+    "import_error_message": "The file could not be imported. Please check that it is a valid project file (.dep.json).",
+    "import_ok": "OK",
+    "import_open": "Open Project"
   },
   "settings": {
     "title": "App Settings",

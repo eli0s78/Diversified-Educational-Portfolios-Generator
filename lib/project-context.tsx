@@ -14,6 +14,7 @@ import {
   listProjects,
   createNewProject,
   deleteProject,
+  renameProject as renameProjectInStorage,
   saveProject,
   setCurrentProjectId,
   loadProject,
@@ -28,6 +29,7 @@ interface ProjectContextValue {
   switchProject: (id: string) => void;
   createProject: () => ProjectData;
   removeProject: (id: string) => void;
+  renameProject: (id: string, newName: string) => void;
   importProject: (file: File) => Promise<ProjectData>;
   exportCurrentProject: () => void;
   refreshProjects: () => void;
@@ -80,6 +82,17 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     [currentProject?.id]
   );
 
+  const handleRenameProject = useCallback(
+    (id: string, newName: string) => {
+      renameProjectInStorage(id, newName);
+      setProjects(listProjects());
+      if (currentProject?.id === id) {
+        setCurrentProject((prev) => prev ? { ...prev, name: newName } : prev);
+      }
+    },
+    [currentProject?.id]
+  );
+
   const handleImportProject = useCallback(async (file: File) => {
     const project = await importProjectFromFile(file);
     setCurrentProject(project);
@@ -107,6 +120,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
         switchProject,
         createProject: handleCreateProject,
         removeProject,
+        renameProject: handleRenameProject,
         importProject: handleImportProject,
         exportCurrentProject: exportCurrentProjectFn,
         refreshProjects,

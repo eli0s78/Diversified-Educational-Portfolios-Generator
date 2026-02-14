@@ -183,6 +183,13 @@ export function createNewProject(): ProjectData {
   return project;
 }
 
+export function renameProject(id: string, newName: string): void {
+  const project = loadProject(id);
+  if (!project) return;
+  project.name = newName;
+  saveProject(project);
+}
+
 export function deleteProject(id: string): void {
   if (typeof window === "undefined") return;
   // Remove from index
