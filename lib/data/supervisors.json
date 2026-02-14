@@ -1,0 +1,2996 @@
+[
+  {
+    "id": 1,
+    "name": "Αγγελάτος Δημήτρης",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Philology",
+    "role": "Professor",
+    "specialties": [
+      "Modern Greek Philology",
+      "Literary Theory"
+    ],
+    "directionAffinities": {
+      "5": 0.3
+    }
+  },
+  {
+    "id": 2,
+    "name": "Αγγέλης Κωνσταντίνος",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Computer Science",
+    "role": "Professor",
+    "specialties": [
+      "Telecommunications"
+    ],
+    "directionAffinities": {
+      "1": 0.5,
+      "3": 0.3
+    }
+  },
+  {
+    "id": 3,
+    "name": "Αδαμίδης Πολύκαρπος",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Law",
+    "role": "Associate Professor",
+    "specialties": [
+      "Military Law"
+    ],
+    "directionAffinities": {
+      "4": 0.5
+    }
+  },
+  {
+    "id": 4,
+    "name": "Αλεξιάδης Μηνάς",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Philology",
+    "role": "Emeritus Professor",
+    "specialties": [
+      "Folklore Studies"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 5,
+    "name": "Αναγνωστόπουλος Κ. Δημήτριος",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Medicine",
+    "role": "Associate Professor",
+    "specialties": [
+      "Child Psychiatry"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 6,
+    "name": "Αναπολιτάνος Διονύσιος",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "History and Philosophy of Science",
+    "role": "Emeritus Professor",
+    "specialties": [
+      "Philosophy of Science"
+    ],
+    "directionAffinities": {
+      "5": 0.7
+    }
+  },
+  {
+    "id": 7,
+    "name": "Αντωνίου Αλέξανδρος-Σταμάτιος",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Psychology",
+    "role": "Professor",
+    "specialties": [
+      "Educational Psychology"
+    ],
+    "directionAffinities": {
+      "5": 0.7
+    }
+  },
+  {
+    "id": 8,
+    "name": "Αντωνόπουλος Χρήστος",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Electrical Engineering",
+    "role": "Associate Professor",
+    "specialties": [
+      "Computer Technology"
+    ],
+    "directionAffinities": {
+      "1": 0.7
+    }
+  },
+  {
+    "id": 9,
+    "name": "Απόστολος Σταβέλας",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Philosophy",
+    "role": "Researcher",
+    "specialties": [
+      "Greek Philosophy"
+    ],
+    "directionAffinities": {
+      "5": 0.3
+    }
+  },
+  {
+    "id": 10,
+    "name": "Αραμπατζής Γεώργιος",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Philosophy",
+    "role": "Professor",
+    "specialties": [
+      "Byzantine Philosophy"
+    ],
+    "directionAffinities": {
+      "5": 0.3
+    }
+  },
+  {
+    "id": 11,
+    "name": "Αργυρός Αντώνιος",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Law",
+    "role": "Legal Counsel",
+    "specialties": [
+      "Public Law"
+    ],
+    "directionAffinities": {
+      "4": 0.5
+    }
+  },
+  {
+    "id": 12,
+    "name": "Αριστείδης Ηλιόπουλος",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Biology",
+    "role": "Professor",
+    "specialties": [
+      "Genetics"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 13,
+    "name": "Ασημακόπουλος Δημοσθένης",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Physics",
+    "role": "Professor",
+    "specialties": [
+      "Environmental Physics"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 14,
+    "name": "Ασημακοπούλου Μαργαρίτα-Νίκη",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Physics",
+    "role": "Professor",
+    "specialties": [],
+    "directionAffinities": {}
+  },
+  {
+    "id": 15,
+    "name": "Αυθίνος Ιωάννης",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Sports Science",
+    "role": "Professor",
+    "specialties": [
+      "Sports Management"
+    ],
+    "directionAffinities": {
+      "2": 0.3,
+      "4": 0.3,
+      "6": 0.3
+    }
+  },
+  {
+    "id": 16,
+    "name": "Βασιλείου Δημήτριος",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Economics",
+    "role": "Professor",
+    "specialties": [
+      "Banking Management"
+    ],
+    "directionAffinities": {
+      "2": 0.7
+    }
+  },
+  {
+    "id": 17,
+    "name": "Βατσανίδου Άννα",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Agriculture",
+    "role": "Assistant Professor",
+    "specialties": [
+      "Precision Agriculture"
+    ],
+    "directionAffinities": {
+      "6": 0.5
+    }
+  },
+  {
+    "id": 18,
+    "name": "Βλασσοπούλου Μαρία",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Medicine",
+    "role": "Assistant Professor",
+    "specialties": [
+      "Speech Pathology"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 19,
+    "name": "Βλαχάδη Μαρία",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Political Science",
+    "role": "Lecturer",
+    "specialties": [
+      "Migration Policy"
+    ],
+    "directionAffinities": {
+      "4": 0.5
+    }
+  },
+  {
+    "id": 20,
+    "name": "Βλαχογιαννόπουλος Παναγιώτης",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Medicine",
+    "role": "Professor",
+    "specialties": [
+      "Pathology",
+      "Immunology"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 21,
+    "name": "Βοσκός Ιωάννης",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Archaeology",
+    "role": "Doctor",
+    "specialties": [
+      "Prehistoric Archaeology"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 22,
+    "name": "Βότης Κωνσταντίνος",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Computer Science",
+    "role": "Researcher",
+    "specialties": [],
+    "directionAffinities": {
+      "1": 0.3
+    }
+  },
+  {
+    "id": 23,
+    "name": "Βραχόπουλος Γρ. Μιχάλης",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Mechanical Engineering",
+    "role": "Professor",
+    "specialties": [
+      "Agricultural Development"
+    ],
+    "directionAffinities": {
+      "1": 0.3
+    }
+  },
+  {
+    "id": 24,
+    "name": "Γαζούλη Μαρία",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Medicine",
+    "role": "Professor",
+    "specialties": [
+      "Molecular Biology"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 25,
+    "name": "Γαλανάκη Ευαγγελία",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Psychology",
+    "role": "Professor",
+    "specialties": [
+      "Developmental Psychology"
+    ],
+    "directionAffinities": {
+      "5": 0.5
+    }
+  },
+  {
+    "id": 26,
+    "name": "Γέμτου Ελένη",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "History and Philosophy of Science",
+    "role": "Associate Professor",
+    "specialties": [
+      "Art History"
+    ],
+    "directionAffinities": {
+      "5": 0.7
+    }
+  },
+  {
+    "id": 27,
+    "name": "Γεωργαντζίνος Στυλιανός",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Aerospace Engineering",
+    "role": "Associate Professor",
+    "specialties": [],
+    "directionAffinities": {
+      "1": 0.5
+    }
+  },
+  {
+    "id": 28,
+    "name": "Γιαννουκάκος Δρακούλης",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Biology",
+    "role": "Director of Research",
+    "specialties": [
+      "Molecular Genetics"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 29,
+    "name": "Γκιόκας Γεώργιος",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Medicine",
+    "role": "Professor",
+    "specialties": [
+      "Surgery",
+      "Intensive Care"
+    ],
+    "directionAffinities": {
+      "6": 0.5
+    }
+  },
+  {
+    "id": 30,
+    "name": "Γολεμάτη Σπυρέττα",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Medicine",
+    "role": "Associate Professor",
+    "specialties": [
+      "Biomedical Engineering"
+    ],
+    "directionAffinities": {
+      "1": 0.3
+    }
+  },
+  {
+    "id": 31,
+    "name": "Γονιδάκης Φραγκίσκος",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Medicine",
+    "role": "Associate Professor",
+    "specialties": [
+      "Psychiatry"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 32,
+    "name": "Γοργούλης Βασίλης",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Medicine",
+    "role": "Professor",
+    "specialties": [
+      "Histology",
+      "Embryology"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 33,
+    "name": "Γραμματάς Θεόδωρος",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Theatre Studies",
+    "role": "Emeritus Professor",
+    "specialties": [
+      "Modern Greek Theatre"
+    ],
+    "directionAffinities": {
+      "6": 0.3
+    }
+  },
+  {
+    "id": 34,
+    "name": "Δασκαλάκης Δημοσθένης",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Sociology",
+    "role": "Professor",
+    "specialties": [
+      "Social Exclusion"
+    ],
+    "directionAffinities": {
+      "4": 0.5
+    }
+  },
+  {
+    "id": 35,
+    "name": "Δεμερτζής Νίκος",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Media Studies",
+    "role": "Professor",
+    "specialties": [
+      "Political Communication"
+    ],
+    "directionAffinities": {
+      "3": 0.5,
+      "4": 0.3
+    }
+  },
+  {
+    "id": 36,
+    "name": "Δημήτριος Σπηλιωτόπουλος",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Computer Science",
+    "role": "Associate Professor",
+    "specialties": [
+      "Intelligent Information Systems"
+    ],
+    "directionAffinities": {
+      "1": 0.7
+    }
+  },
+  {
+    "id": 37,
+    "name": "Δημόπουλος Κωνσταντίνος",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Chemistry",
+    "role": "Emeritus Professor",
+    "specialties": [
+      "Biochemistry",
+      "Food Chemistry"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 38,
+    "name": "Διαμαντοπούλου Ευαγγελία",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Media Studies",
+    "role": "Associate Professor",
+    "specialties": [
+      "Modern Art"
+    ],
+    "directionAffinities": {
+      "3": 0.3
+    }
+  },
+  {
+    "id": 39,
+    "name": "Δουζένης Αθανάσιος",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Medicine",
+    "role": "Professor",
+    "specialties": [
+      "Psychiatry"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 40,
+    "name": "Δρ. Μεγρέμη Ιφιγένεια",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Geology",
+    "role": "Laboratory Teaching Staff",
+    "specialties": [
+      "Mineralogy"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 41,
+    "name": "Δρ. Σταυρακάκης Εμμανουήλ",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Engineering",
+    "role": "Assistant Professor",
+    "specialties": [
+      "Architecture"
+    ],
+    "directionAffinities": {
+      "1": 0.3,
+      "6": 0.3
+    }
+  },
+  {
+    "id": 42,
+    "name": "Δρίτσας Σταμάτιος",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Economics",
+    "role": "Certified Public Accountant",
+    "specialties": [
+      "Auditing"
+    ],
+    "directionAffinities": {
+      "2": 0.5
+    }
+  },
+  {
+    "id": 43,
+    "name": "Εμμανουήλ Ιωάννης",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Mathematics",
+    "role": "Professor",
+    "specialties": [],
+    "directionAffinities": {
+      "2": 0.3
+    }
+  },
+  {
+    "id": 44,
+    "name": "Ευελπίδου Νίκη",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Geology",
+    "role": "Professor",
+    "specialties": [
+      "Geography",
+      "Geomorphology"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 45,
+    "name": "Ευσταθόπουλος Ευστάθιος",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Medicine",
+    "role": "Professor",
+    "specialties": [
+      "Medical Physics"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 46,
+    "name": "Ζαμπετάκης Ιωάννης",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Chemistry",
+    "role": "Associate Professor",
+    "specialties": [
+      "Chemical Sciences"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 47,
+    "name": "Ζούλιας Εμμανουήλ",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Informatics",
+    "role": "Laboratory Teaching Staff",
+    "specialties": [
+      "Health Informatics"
+    ],
+    "directionAffinities": {
+      "1": 0.5
+    }
+  },
+  {
+    "id": 48,
+    "name": "Ζώη Σταυρούλα",
+    "nameEn": null,
+    "domain": "Arts",
+    "field": "Digital Arts",
+    "role": "Laboratory Teaching Staff",
+    "specialties": [
+      "Multimedia"
+    ],
+    "directionAffinities": {
+      "1": 0.5
+    }
+  },
+  {
+    "id": 49,
+    "name": "Ζωίδης Γρηγόρης",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Pharmacy",
+    "role": "Professor",
+    "specialties": [
+      "Pharmaceutical Chemistry"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 50,
+    "name": "Ηρειώτης Νικόλαος",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Economics",
+    "role": "Professor",
+    "specialties": [
+      "Financial Accounting"
+    ],
+    "directionAffinities": {
+      "2": 0.5
+    }
+  },
+  {
+    "id": 51,
+    "name": "Θεοδοσοπούλου Ελένη",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Nursing",
+    "role": "Professor",
+    "specialties": [],
+    "directionAffinities": {
+      "6": 0.3
+    }
+  },
+  {
+    "id": 52,
+    "name": "Θραψανιώτης Γεώργιος",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Theology",
+    "role": "Laboratory Teaching Staff",
+    "specialties": [
+      "Religious Studies"
+    ],
+    "directionAffinities": {
+      "5": 0.5
+    }
+  },
+  {
+    "id": 53,
+    "name": "Ίσαρη Φιλία",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Psychology",
+    "role": "Professor",
+    "specialties": [
+      "Counseling Psychology"
+    ],
+    "directionAffinities": {
+      "5": 0.5
+    }
+  },
+  {
+    "id": 54,
+    "name": "Καβαντζάς Νικόλαος",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Medicine",
+    "role": "Professor",
+    "specialties": [
+      "Pathology"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 55,
+    "name": "Κάβουρας Παύλος",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Music Studies",
+    "role": "Emeritus Professor",
+    "specialties": [
+      "Ethnomusicology"
+    ],
+    "directionAffinities": {
+      "6": 0.7
+    }
+  },
+  {
+    "id": 56,
+    "name": "Καινούργιος Δημήτριος",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Economics",
+    "role": "Professor",
+    "specialties": [
+      "Finance"
+    ],
+    "directionAffinities": {
+      "2": 0.5
+    }
+  },
+  {
+    "id": 57,
+    "name": "Καλλινίκου Διονυσία",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Law",
+    "role": "Emeritus Professor",
+    "specialties": [
+      "Private Law"
+    ],
+    "directionAffinities": {
+      "4": 0.5
+    }
+  },
+  {
+    "id": 58,
+    "name": "Κανακά Χριστίνα",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Medicine",
+    "role": "Professor",
+    "specialties": [
+      "Pediatric Endocrinology"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 59,
+    "name": "Καραγεωργούδης Εμμανουήλ",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Theology",
+    "role": "Professor",
+    "specialties": [
+      "Social Theology"
+    ],
+    "directionAffinities": {
+      "5": 0.5
+    }
+  },
+  {
+    "id": 60,
+    "name": "Καρακάση Κατερίνα",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Philology",
+    "role": "Associate Professor",
+    "specialties": [
+      "German Language and Philology"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 61,
+    "name": "Καραλή Λίλιαν",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Archaeology",
+    "role": "Emeritus Professor",
+    "specialties": [
+      "Environmental Archaeology"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 62,
+    "name": "Καραμανωλάκης Βαγγέλης",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "History",
+    "role": "Professor",
+    "specialties": [
+      "Historiography"
+    ],
+    "directionAffinities": {
+      "5": 0.7
+    }
+  },
+  {
+    "id": 63,
+    "name": "Καραμπατζός Αντώνιος",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Law",
+    "role": "Professor",
+    "specialties": [
+      "Civil Law"
+    ],
+    "directionAffinities": {
+      "4": 0.5
+    }
+  },
+  {
+    "id": 64,
+    "name": "Καραμπίνης Ανδρέας",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Medicine",
+    "role": "Professor",
+    "specialties": [
+      "Intensive Care"
+    ],
+    "directionAffinities": {
+      "6": 0.3
+    }
+  },
+  {
+    "id": 65,
+    "name": "Καρανάσιου Ειρήνη",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Engineering",
+    "role": "Professor",
+    "specialties": [
+      "Electronics"
+    ],
+    "directionAffinities": {
+      "1": 0.5
+    }
+  },
+  {
+    "id": 66,
+    "name": "Καράντζαλος Κωνσταντίνος",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Engineering",
+    "role": "Associate Professor",
+    "specialties": [
+      "Surveying"
+    ],
+    "directionAffinities": {
+      "1": 0.3
+    }
+  },
+  {
+    "id": 67,
+    "name": "Καρτάλης Κωνσταντίνος",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Physics",
+    "role": "Professor",
+    "specialties": [
+      "Environmental Physics"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 68,
+    "name": "Καρτερολιώτης Κωνσταντίνος",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Sports Science",
+    "role": "Retired Professor",
+    "specialties": [
+      "Sports Research Methodology"
+    ],
+    "directionAffinities": {
+      "6": 0.5
+    }
+  },
+  {
+    "id": 69,
+    "name": "Καρύδα Μαρία",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Information Systems",
+    "role": "Professor",
+    "specialties": [
+      "Information Security"
+    ],
+    "directionAffinities": {
+      "1": 0.5
+    }
+  },
+  {
+    "id": 70,
+    "name": "Καρύδης Χρήστος",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Conservation",
+    "role": "Associate Professor",
+    "specialties": [
+      "Art Conservation"
+    ],
+    "directionAffinities": {
+      "6": 0.5
+    }
+  },
+  {
+    "id": 71,
+    "name": "Κατσάρα Ουρανία",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Linguistics",
+    "role": "Teaching Staff",
+    "specialties": [
+      "English Language"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 72,
+    "name": "Κατσέλη Λούκα",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Economics",
+    "role": "Professor",
+    "specialties": [],
+    "directionAffinities": {
+      "2": 0.3
+    }
+  },
+  {
+    "id": 73,
+    "name": "Κατσίμπρας Απόστολος",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Education",
+    "role": "Laboratory Teaching Staff",
+    "specialties": [
+      "Pedagogy"
+    ],
+    "directionAffinities": {
+      "5": 0.5
+    }
+  },
+  {
+    "id": 74,
+    "name": "Κατσώνη Βίκυ",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Tourism Management",
+    "role": "Professor",
+    "specialties": [],
+    "directionAffinities": {
+      "2": 0.5,
+      "3": 0.7
+    }
+  },
+  {
+    "id": 75,
+    "name": "Κεφαλά Βασιλική",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Aesthetics",
+    "role": "Professor",
+    "specialties": [
+      "Cosmetology"
+    ],
+    "directionAffinities": {
+      "5": 0.3,
+      "6": 0.3
+    }
+  },
+  {
+    "id": 76,
+    "name": "Κεφαλέα Κίρκη",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Theology",
+    "role": "Professor",
+    "specialties": [
+      "Comparative Literature"
+    ],
+    "directionAffinities": {
+      "5": 0.5
+    }
+  },
+  {
+    "id": 77,
+    "name": "Κοΐδης Αναστάσιος",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Food Science",
+    "role": "Assistant Professor",
+    "specialties": [
+      "Nutrition"
+    ],
+    "directionAffinities": {
+      "6": 0.5
+    }
+  },
+  {
+    "id": 78,
+    "name": "Κόκκορας Φώτιος",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Informatics",
+    "role": "Assistant Professor",
+    "specialties": [
+      "Digital Systems"
+    ],
+    "directionAffinities": {
+      "1": 0.7
+    }
+  },
+  {
+    "id": 79,
+    "name": "Κοκολάκης Σπυρίδων",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Information Systems",
+    "role": "Professor",
+    "specialties": [
+      "Information Security"
+    ],
+    "directionAffinities": {
+      "1": 0.5
+    }
+  },
+  {
+    "id": 80,
+    "name": "Κοκόσης Αντώνης",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Chemical Engineering",
+    "role": "Professor",
+    "specialties": [
+      "Process Design"
+    ],
+    "directionAffinities": {
+      "1": 0.3
+    }
+  },
+  {
+    "id": 81,
+    "name": "Κόλια Δερμιτζάκη Αθηνά",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Archaeology",
+    "role": "Emeritus Professor",
+    "specialties": [
+      "History"
+    ],
+    "directionAffinities": {
+      "5": 0.3
+    }
+  },
+  {
+    "id": 82,
+    "name": "Κόλιας Γ. Ταξιάρχης",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Philology",
+    "role": "Emeritus Professor",
+    "specialties": [],
+    "directionAffinities": {}
+  },
+  {
+    "id": 83,
+    "name": "Κομνηνού Ιωάννα",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Theology",
+    "role": "Assistant Professor",
+    "specialties": [
+      "Religious Education"
+    ],
+    "directionAffinities": {
+      "5": 0.5
+    }
+  },
+  {
+    "id": 84,
+    "name": "Κόντης Αντώνιος",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Political Science",
+    "role": "Professor",
+    "specialties": [
+      "International Studies"
+    ],
+    "directionAffinities": {
+      "4": 0.5
+    }
+  },
+  {
+    "id": 85,
+    "name": "Κοντοχρήστου Μαρία",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Political Science",
+    "role": "Assistant Professor",
+    "specialties": [
+      "International Politics"
+    ],
+    "directionAffinities": {
+      "4": 0.5
+    }
+  },
+  {
+    "id": 86,
+    "name": "Κοπανιάς Κωνσταντίνος",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Archaeology",
+    "role": "Associate Professor",
+    "specialties": [
+      "History"
+    ],
+    "directionAffinities": {
+      "5": 0.3
+    }
+  },
+  {
+    "id": 87,
+    "name": "Κορομπέλη Άννα",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Nursing",
+    "role": "Laboratory Teaching Staff",
+    "specialties": [
+      "Intensive Care"
+    ],
+    "directionAffinities": {
+      "6": 0.5
+    }
+  },
+  {
+    "id": 88,
+    "name": "Κοτσερίδης Γεώργιος",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Food Science",
+    "role": "Professor",
+    "specialties": [
+      "Enology"
+    ],
+    "directionAffinities": {
+      "6": 0.5
+    }
+  },
+  {
+    "id": 89,
+    "name": "Κουλαϊδής Βασίλειος",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Education",
+    "role": "Professor",
+    "specialties": [
+      "Pedagogy"
+    ],
+    "directionAffinities": {
+      "5": 0.5
+    }
+  },
+  {
+    "id": 90,
+    "name": "Κούμας Εμμανουήλ",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "History",
+    "role": "Assistant Professor",
+    "specialties": [
+      "International Relations History"
+    ],
+    "directionAffinities": {
+      "5": 0.3
+    }
+  },
+  {
+    "id": 91,
+    "name": "Κουμπουλής Φώτης Ν.",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Engineering",
+    "role": "Professor",
+    "specialties": [
+      "Robotics",
+      "Automation"
+    ],
+    "directionAffinities": {
+      "1": 0.7
+    }
+  },
+  {
+    "id": 92,
+    "name": "Κουρκουβέλας Λυκούργος",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "History",
+    "role": "Assistant Professor",
+    "specialties": [
+      "International Relations History"
+    ],
+    "directionAffinities": {
+      "5": 0.3
+    }
+  },
+  {
+    "id": 93,
+    "name": "Κουτσιλιέρης Μιχαήλ",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Medicine",
+    "role": "Emeritus Professor",
+    "specialties": [
+      "Experimental Physiology"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 94,
+    "name": "Κριεμάδης Αθανάσιος",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Management",
+    "role": "Professor",
+    "specialties": [
+      "Sports Management"
+    ],
+    "directionAffinities": {
+      "2": 0.3,
+      "4": 0.3
+    }
+  },
+  {
+    "id": 95,
+    "name": "Κωνσταντίνα Νασοπούλου",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Food Science",
+    "role": "Assistant Professor",
+    "specialties": [
+      "Food Technology"
+    ],
+    "directionAffinities": {
+      "6": 0.5
+    }
+  },
+  {
+    "id": 96,
+    "name": "Κωνσταντίνος Κώστας",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Engineering",
+    "role": "Associate Professor",
+    "specialties": [
+      "Mechanical Engineering",
+      "Aerospace Engineering"
+    ],
+    "directionAffinities": {
+      "1": 0.5
+    }
+  },
+  {
+    "id": 97,
+    "name": "Κωστόπουλος Τρύφωνας",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Sociology",
+    "role": "Professor",
+    "specialties": [
+      "European Studies"
+    ],
+    "directionAffinities": {
+      "4": 0.5
+    }
+  },
+  {
+    "id": 98,
+    "name": "Κώτσιος Στυλιανός",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Economics",
+    "role": "Professor",
+    "specialties": [
+      "Mathematics"
+    ],
+    "directionAffinities": {
+      "1": 0.3,
+      "2": 0.5
+    }
+  },
+  {
+    "id": 99,
+    "name": "Λαζαράτου Ελένη",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Medicine",
+    "role": "Emeritus Professor",
+    "specialties": [
+      "Child Psychiatry"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 100,
+    "name": "Λάζου Άννα",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Philosophy",
+    "role": "Associate Professor",
+    "specialties": [
+      "Aesthetics"
+    ],
+    "directionAffinities": {
+      "5": 0.5,
+      "6": 0.3
+    }
+  },
+  {
+    "id": 101,
+    "name": "Λαμπρινή Πήχα",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Business Administration",
+    "role": "Associate Professor",
+    "specialties": [
+      "Marketing"
+    ],
+    "directionAffinities": {
+      "2": 0.5,
+      "3": 0.3
+    }
+  },
+  {
+    "id": 102,
+    "name": "Λαμπρινουδάκης Βασίλειος",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Archaeology",
+    "role": "Emeritus Professor",
+    "specialties": [
+      "Classical Archaeology"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 103,
+    "name": "Λεβεντίδης Ιωάννης",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Economics",
+    "role": "Professor",
+    "specialties": [
+      "Mathematics"
+    ],
+    "directionAffinities": {
+      "2": 0.7
+    }
+  },
+  {
+    "id": 104,
+    "name": "Λεοντσίνη Μαίρη",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Education",
+    "role": "Professor",
+    "specialties": [
+      "Gender Studies"
+    ],
+    "directionAffinities": {
+      "5": 0.5
+    }
+  },
+  {
+    "id": 105,
+    "name": "Λιγωμένου Άννα",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Law",
+    "role": "Professor",
+    "specialties": [
+      "Public Auditing"
+    ],
+    "directionAffinities": {
+      "2": 0.3,
+      "4": 0.5
+    }
+  },
+  {
+    "id": 106,
+    "name": "Λιόλιος Θεόδωρος",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Physics",
+    "role": "Professor",
+    "specialties": [
+      "Nuclear Physics"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 107,
+    "name": "Μαγκούτας Αναστάσιος",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Business Administration",
+    "role": "Professor",
+    "specialties": [
+      "Applied Economics"
+    ],
+    "directionAffinities": {
+      "2": 0.7
+    }
+  },
+  {
+    "id": 108,
+    "name": "Μάζης Ιωάννης",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Asian Studies",
+    "role": "Emeritus Professor",
+    "specialties": [
+      "Turkish Studies"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 109,
+    "name": "Μακρυλάκης Κωνσταντίνος",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Medicine",
+    "role": "Professor",
+    "specialties": [
+      "Pathology"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 110,
+    "name": "Μαλαφάντης Κωνσταντίνος",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Education",
+    "role": "Professor",
+    "specialties": [
+      "Pedagogy"
+    ],
+    "directionAffinities": {
+      "5": 0.5
+    }
+  },
+  {
+    "id": 111,
+    "name": "Μαλιάρας Νικόλαος",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Music Studies",
+    "role": "Professor",
+    "specialties": [
+      "Musicology"
+    ],
+    "directionAffinities": {
+      "6": 0.5
+    }
+  },
+  {
+    "id": 112,
+    "name": "Μαλικιώση-Λοϊζου Μαρία",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Psychology",
+    "role": "Emeritus Professor",
+    "specialties": [
+      "Counseling Psychology"
+    ],
+    "directionAffinities": {
+      "5": 0.5
+    }
+  },
+  {
+    "id": 113,
+    "name": "Μαντάς Ιωάννης",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Nursing",
+    "role": "Emeritus Professor",
+    "specialties": [],
+    "directionAffinities": {
+      "6": 0.3
+    }
+  },
+  {
+    "id": 114,
+    "name": "Μαντάς Μιχαήλ",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Informatics",
+    "role": "Associate Professor",
+    "specialties": [
+      "Logistics"
+    ],
+    "directionAffinities": {
+      "1": 0.5
+    }
+  },
+  {
+    "id": 115,
+    "name": "Μαντζουράνη Ελένη",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Archaeology",
+    "role": "Professor",
+    "specialties": [
+      "Prehistoric Archaeology"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 116,
+    "name": "Μασούρας Θεόφιλος",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Food Science",
+    "role": "Professor",
+    "specialties": [
+      "Dairy Science"
+    ],
+    "directionAffinities": {
+      "1": 0.3,
+      "6": 0.5
+    }
+  },
+  {
+    "id": 117,
+    "name": "Ματθαίου Δημήτριος",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Education",
+    "role": "Emeritus Professor",
+    "specialties": [
+      "Comparative Education"
+    ],
+    "directionAffinities": {
+      "5": 0.5
+    }
+  },
+  {
+    "id": 118,
+    "name": "Μαυρικάκη Ευαγγελία",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Education",
+    "role": "Professor",
+    "specialties": [
+      "Biology",
+      "Health Education"
+    ],
+    "directionAffinities": {
+      "5": 0.3
+    }
+  },
+  {
+    "id": 119,
+    "name": "Μαυρομούστακος Πλάτων",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Theatre Studies",
+    "role": "Professor",
+    "specialties": [],
+    "directionAffinities": {
+      "6": 0.3
+    }
+  },
+  {
+    "id": 120,
+    "name": "Μαχαίρας Χαράλαμπος",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Law",
+    "role": "Judge (Emeritus)",
+    "specialties": [
+      "Maritime Law"
+    ],
+    "directionAffinities": {
+      "4": 0.5
+    }
+  },
+  {
+    "id": 121,
+    "name": "Μεγαλονίδου Χριστίνα",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Early Childhood Education",
+    "role": "Assistant Professor",
+    "specialties": [],
+    "directionAffinities": {
+      "5": 0.5
+    }
+  },
+  {
+    "id": 122,
+    "name": "Μιχαήλ Μ. Δημήτριος",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Business Administration",
+    "role": "Professor",
+    "specialties": [
+      "Human Resource Management"
+    ],
+    "directionAffinities": {
+      "2": 0.5,
+      "4": 0.3
+    }
+  },
+  {
+    "id": 123,
+    "name": "Μιχαλακέλης Χρήστος",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Informatics",
+    "role": "Professor",
+    "specialties": [],
+    "directionAffinities": {
+      "1": 0.5
+    }
+  },
+  {
+    "id": 124,
+    "name": "Μουζάκης Διονύσιος",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Engineering",
+    "role": "Professor",
+    "specialties": [
+      "Materials Science"
+    ],
+    "directionAffinities": {
+      "1": 0.5
+    }
+  },
+  {
+    "id": 125,
+    "name": "Μουζάκης-Νεολής Φώτιος",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Economics",
+    "role": "Visiting Professor",
+    "specialties": [
+      "Real Estate Economics"
+    ],
+    "directionAffinities": {
+      "2": 0.5
+    }
+  },
+  {
+    "id": 126,
+    "name": "Μπακαλίδου Δάφνη",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Physiotherapy",
+    "role": "Assistant Professor",
+    "specialties": [],
+    "directionAffinities": {
+      "1": 0.3,
+      "6": 0.3
+    }
+  },
+  {
+    "id": 127,
+    "name": "Μπακοπούλου Φλώρα",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Medicine",
+    "role": "Professor",
+    "specialties": [
+      "Pediatrics",
+      "Adolescent Medicine"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 128,
+    "name": "Μπάλιος Δημήτριος",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Economics",
+    "role": "Associate Professor",
+    "specialties": [
+      "Financial Accounting"
+    ],
+    "directionAffinities": {
+      "2": 0.5
+    }
+  },
+  {
+    "id": 129,
+    "name": "Μπαλντούκας Αντώνης",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Engineering",
+    "role": "Professor",
+    "specialties": [
+      "Computer Aided Design"
+    ],
+    "directionAffinities": {
+      "1": 0.7
+    }
+  },
+  {
+    "id": 130,
+    "name": "Μπαλτόπουλος Γεώργιος",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Nursing",
+    "role": "Emeritus Professor",
+    "specialties": [],
+    "directionAffinities": {
+      "6": 0.3
+    }
+  },
+  {
+    "id": 131,
+    "name": "Μπαμπάλης Θωμάς",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Education",
+    "role": "Professor",
+    "specialties": [
+      "Pedagogy"
+    ],
+    "directionAffinities": {
+      "5": 0.5
+    }
+  },
+  {
+    "id": 132,
+    "name": "Μπαμπούνης Χαράλαμπος",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "History",
+    "role": "Emeritus Professor",
+    "specialties": [],
+    "directionAffinities": {
+      "5": 0.5
+    }
+  },
+  {
+    "id": 133,
+    "name": "Μπέγζος Μάριος",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Theology",
+    "role": "Retired Professor",
+    "specialties": [
+      "Philosophy of Religion"
+    ],
+    "directionAffinities": {
+      "5": 0.7
+    }
+  },
+  {
+    "id": 134,
+    "name": "Μπέλλας Αθανάσιος",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Economics",
+    "role": "Emeritus Professor",
+    "specialties": [],
+    "directionAffinities": {
+      "2": 0.3
+    }
+  },
+  {
+    "id": 135,
+    "name": "Μπόσκου Γεώργιος",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Dietetics",
+    "role": "Associate Professor",
+    "specialties": [
+      "Nutrition"
+    ],
+    "directionAffinities": {
+      "6": 0.5
+    }
+  },
+  {
+    "id": 136,
+    "name": "Μπρουσκέλη Βασιλική",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Psychology",
+    "role": "Associate Professor",
+    "specialties": [
+      "Health Psychology"
+    ],
+    "directionAffinities": {
+      "5": 0.5
+    }
+  },
+  {
+    "id": 137,
+    "name": "Μυριανθεύς Παύλος",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Medicine",
+    "role": "Professor",
+    "specialties": [
+      "Intensive Care"
+    ],
+    "directionAffinities": {
+      "6": 0.3
+    }
+  },
+  {
+    "id": 138,
+    "name": "Νακοπούλου Λυδία",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Medicine",
+    "role": "Emeritus Professor",
+    "specialties": [
+      "Pathology"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 139,
+    "name": "Νανάς Σεραφείμ",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Medicine",
+    "role": "Emeritus Professor",
+    "specialties": [
+      "Pathology"
+    ],
+    "directionAffinities": {
+      "6": 0.3
+    }
+  },
+  {
+    "id": 140,
+    "name": "Νάστος Παναγιώτης",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Geology",
+    "role": "Professor",
+    "specialties": [
+      "Climatology"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 141,
+    "name": "Νομικού Παρασκευή",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Geology",
+    "role": "Professor",
+    "specialties": [
+      "Oceanography"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 142,
+    "name": "Ντίνας Δ. Κώστας",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Linguistics",
+    "role": "Emeritus Professor",
+    "specialties": [
+      "Greek Language"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 143,
+    "name": "Ντρίνια Χαρά",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Geology",
+    "role": "Professor",
+    "specialties": [
+      "Paleoecology"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 144,
+    "name": "Οικονομίδου Βασιλική",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Biology",
+    "role": "Associate Professor",
+    "specialties": [
+      "Biophysics"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 145,
+    "name": "Παγώνης Δημήτριος-Νικόλαος",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Engineering",
+    "role": "Professor",
+    "specialties": [
+      "Naval Architecture"
+    ],
+    "directionAffinities": {
+      "1": 0.5,
+      "6": 0.3
+    }
+  },
+  {
+    "id": 146,
+    "name": "Παναγιωτόπουλος Δημήτριος",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Law",
+    "role": "Professor",
+    "specialties": [
+      "Sports Law"
+    ],
+    "directionAffinities": {
+      "4": 0.5
+    }
+  },
+  {
+    "id": 147,
+    "name": "Πανούσης Γιάννης",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Criminology",
+    "role": "Emeritus Professor",
+    "specialties": [],
+    "directionAffinities": {
+      "4": 0.3
+    }
+  },
+  {
+    "id": 148,
+    "name": "Παπαγεωργίου Σωκράτης",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Medicine",
+    "role": "Professor",
+    "specialties": [
+      "Neurology"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 149,
+    "name": "Παπαδάτος Ιωάννης",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Archaeology",
+    "role": "Professor",
+    "specialties": [
+      "Prehistoric Archaeology"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 150,
+    "name": "Παπαθανασόπουλος Στέλιος",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Media Studies",
+    "role": "Professor",
+    "specialties": [
+      "Journalism"
+    ],
+    "directionAffinities": {
+      "3": 0.5
+    }
+  },
+  {
+    "id": 151,
+    "name": "Παπαθεοδώρου Ανδρέας",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Economics",
+    "role": "Professor",
+    "specialties": [
+      "Tourism Economics"
+    ],
+    "directionAffinities": {
+      "2": 0.5
+    }
+  },
+  {
+    "id": 152,
+    "name": "Παπαθωμάς Αμφιλόχιος",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Philology",
+    "role": "Professor",
+    "specialties": [],
+    "directionAffinities": {}
+  },
+  {
+    "id": 153,
+    "name": "Παπανδρέου Μαρία",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Physiotherapy",
+    "role": "Professor",
+    "specialties": [
+      "Musculoskeletal Physiotherapy"
+    ],
+    "directionAffinities": {
+      "1": 0.3,
+      "6": 0.5
+    }
+  },
+  {
+    "id": 154,
+    "name": "Παπαρρηγόπουλος Θωμάς",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Medicine",
+    "role": "Professor",
+    "specialties": [
+      "Psychiatry"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 155,
+    "name": "Παπασαλούρος Ανδρέας",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Mathematics",
+    "role": "Associate Professor",
+    "specialties": [],
+    "directionAffinities": {
+      "2": 0.3,
+      "5": 0.3
+    }
+  },
+  {
+    "id": 156,
+    "name": "Παπουτσάκη Καλλιόπη",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Medicine",
+    "role": "Laboratory Teaching Staff",
+    "specialties": [
+      "Pedagogy"
+    ],
+    "directionAffinities": {
+      "5": 0.3
+    }
+  },
+  {
+    "id": 157,
+    "name": "Παρασχάς Σωτήριος",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Philology",
+    "role": "Assistant Professor",
+    "specialties": [
+      "French Literature"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 158,
+    "name": "Πατσούρης Ευστράτιος Σ.",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Medicine",
+    "role": "Emeritus Professor",
+    "specialties": [
+      "Pathology"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 159,
+    "name": "Παυλάτου Ευαγγελία",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Chemical Engineering",
+    "role": "Professor",
+    "specialties": [
+      "Chemical Sciences"
+    ],
+    "directionAffinities": {
+      "1": 0.3
+    }
+  },
+  {
+    "id": 160,
+    "name": "Πέππα Σοφία",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Engineering",
+    "role": "Associate Professor",
+    "specialties": [
+      "Naval Architecture"
+    ],
+    "directionAffinities": {
+      "1": 0.5,
+      "6": 0.3
+    }
+  },
+  {
+    "id": 161,
+    "name": "Πετράκης Παναγιώτης",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Economics",
+    "role": "Emeritus Professor",
+    "specialties": [
+      "Economic Development"
+    ],
+    "directionAffinities": {
+      "2": 0.5
+    }
+  },
+  {
+    "id": 162,
+    "name": "Πεχλιβανίδης Αρτέμιος",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Medicine",
+    "role": "Professor",
+    "specialties": [
+      "Psychiatry"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 163,
+    "name": "Πιτυρίγκα Βασιλική",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Medicine",
+    "role": "Associate Professor",
+    "specialties": [
+      "Microbiology"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 164,
+    "name": "Πλάντζος Δημήτριος",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Archaeology",
+    "role": "Professor",
+    "specialties": [
+      "Classical Archaeology"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 165,
+    "name": "Πλειός Γιώργος",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Media Studies",
+    "role": "Professor",
+    "specialties": [
+      "Sociology of Media"
+    ],
+    "directionAffinities": {
+      "3": 0.3,
+      "4": 0.3
+    }
+  },
+  {
+    "id": 166,
+    "name": "Πλουμίδης Γ. Σπυρίδων",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "History",
+    "role": "Professor",
+    "specialties": [
+      "Modern Greek History"
+    ],
+    "directionAffinities": {
+      "5": 0.5
+    }
+  },
+  {
+    "id": 167,
+    "name": "Πολυχρόνη Φωτεινή",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Psychology",
+    "role": "Professor",
+    "specialties": [
+      "Educational Psychology"
+    ],
+    "directionAffinities": {
+      "5": 0.7
+    }
+  },
+  {
+    "id": 168,
+    "name": "Πουλάκη Ιουλία",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Business Administration",
+    "role": "Assistant Professor",
+    "specialties": [
+      "Tourism Management"
+    ],
+    "directionAffinities": {
+      "2": 0.5,
+      "3": 0.3
+    }
+  },
+  {
+    "id": 169,
+    "name": "Πουφινάς Θωμάς",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Economics",
+    "role": "Assistant Professor",
+    "specialties": [
+      "Finance"
+    ],
+    "directionAffinities": {
+      "2": 0.5
+    }
+  },
+  {
+    "id": 170,
+    "name": "Πριόβολου Στέλλα",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Philology",
+    "role": "Emeritus Professor",
+    "specialties": [
+      "Italian Literature"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 171,
+    "name": "Πρωτοπαπαδάκης Ευάγγελος",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Philosophy",
+    "role": "Professor",
+    "specialties": [
+      "Applied Ethics"
+    ],
+    "directionAffinities": {
+      "5": 0.7
+    }
+  },
+  {
+    "id": 172,
+    "name": "Ράλλη Ασημίνα",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Psychology",
+    "role": "Professor",
+    "specialties": [
+      "Developmental Psychology"
+    ],
+    "directionAffinities": {
+      "5": 0.5
+    }
+  },
+  {
+    "id": 173,
+    "name": "Ρηγόπουλος Γεώργιος",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Economics",
+    "role": "Assistant Professor",
+    "specialties": [
+      "Informatics"
+    ],
+    "directionAffinities": {
+      "1": 0.3,
+      "2": 0.3
+    }
+  },
+  {
+    "id": 174,
+    "name": "Ρηγόπουλος Δημήτρης",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Medicine",
+    "role": "Professor",
+    "specialties": [
+      "Dermatology"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 175,
+    "name": "Ρήγου Μαρίνα",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Media Studies",
+    "role": "Assistant Professor",
+    "specialties": [
+      "Communication Psychology"
+    ],
+    "directionAffinities": {
+      "3": 0.5,
+      "5": 0.3
+    }
+  },
+  {
+    "id": 176,
+    "name": "Ρήγου Μυρτώ",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Media Studies",
+    "role": "Professor",
+    "specialties": [
+      "Communication Theory"
+    ],
+    "directionAffinities": {
+      "3": 0.5
+    }
+  },
+  {
+    "id": 177,
+    "name": "Ριζομυλιώτης Παναγιώτης",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Informatics",
+    "role": "Associate Professor",
+    "specialties": [
+      "Cryptography"
+    ],
+    "directionAffinities": {
+      "1": 0.5
+    }
+  },
+  {
+    "id": 178,
+    "name": "Ρομποτής Γεράσιμος",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Economics",
+    "role": "Certified Public Accountant",
+    "specialties": [
+      "Auditing"
+    ],
+    "directionAffinities": {
+      "2": 0.5
+    }
+  },
+  {
+    "id": 179,
+    "name": "Σακελλίου Λιάνα",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Philology",
+    "role": "Professor",
+    "specialties": [
+      "English Literature"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 180,
+    "name": "Σαμαντά Ειρήνη",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Business Administration",
+    "role": "Emeritus Professor",
+    "specialties": [
+      "Marketing"
+    ],
+    "directionAffinities": {
+      "2": 0.5,
+      "3": 0.3
+    }
+  },
+  {
+    "id": 181,
+    "name": "Σάμιτας Αριστείδης",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Economics",
+    "role": "Professor",
+    "specialties": [
+      "Finance"
+    ],
+    "directionAffinities": {
+      "2": 0.5
+    }
+  },
+  {
+    "id": 182,
+    "name": "Σανούδου Δέσποινα",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Medicine",
+    "role": "Professor",
+    "specialties": [
+      "Pharmacogenomics"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 183,
+    "name": "Σανταμούρης Ματθαίος",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Engineering",
+    "role": "Professor",
+    "specialties": [
+      "Built Environment"
+    ],
+    "directionAffinities": {
+      "1": 0.3,
+      "6": 0.3
+    }
+  },
+  {
+    "id": 184,
+    "name": "Σιδηροπούλου Μαρία",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Philology",
+    "role": "Emeritus Professor",
+    "specialties": [
+      "English Literature"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 185,
+    "name": "Σιούτη Γλυκερία",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Law",
+    "role": "Emeritus Professor",
+    "specialties": [
+      "Public Law"
+    ],
+    "directionAffinities": {
+      "4": 0.5
+    }
+  },
+  {
+    "id": 186,
+    "name": "Σκαρμέας Νικόλαος",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Medicine",
+    "role": "Professor",
+    "specialties": [
+      "Neurology"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 187,
+    "name": "Σκιάνης Χαράλαμπος",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Engineering",
+    "role": "Professor",
+    "specialties": [
+      "Information Systems"
+    ],
+    "directionAffinities": {
+      "1": 0.5
+    }
+  },
+  {
+    "id": 188,
+    "name": "Σκολαρίκος Ανδρέας",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Medicine",
+    "role": "Professor",
+    "specialties": [
+      "Urology"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 189,
+    "name": "Σκοπετέας Ιωάννης",
+    "nameEn": null,
+    "domain": "Arts",
+    "field": "Film Studies",
+    "role": "Associate Professor",
+    "specialties": [
+      "Directing"
+    ],
+    "directionAffinities": {
+      "6": 0.5
+    }
+  },
+  {
+    "id": 190,
+    "name": "Σκορδούλης Κωνσταντίνος",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Education",
+    "role": "Professor",
+    "specialties": [
+      "Epistemology"
+    ],
+    "directionAffinities": {
+      "5": 0.5
+    }
+  },
+  {
+    "id": 191,
+    "name": "Σκούλλος Μιχαήλ",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Chemistry",
+    "role": "Emeritus Professor",
+    "specialties": [
+      "Environmental Chemistry"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 192,
+    "name": "Σμυρναίου Ζαχαρούλα",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Education",
+    "role": "Associate Professor",
+    "specialties": [
+      "Science Education"
+    ],
+    "directionAffinities": {
+      "5": 0.5
+    }
+  },
+  {
+    "id": 193,
+    "name": "Σοφιανός Σαράντης",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Physics",
+    "role": "Associate Professor",
+    "specialties": [
+      "Environmental Physics"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 194,
+    "name": "Σπανός Ε. Γιάννης",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Theatre Studies",
+    "role": "Professor",
+    "specialties": [
+      "Business Strategy"
+    ],
+    "directionAffinities": {
+      "6": 0.3
+    }
+  },
+  {
+    "id": 195,
+    "name": "Σπουρδαλάκης Άρης",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Physics",
+    "role": "Researcher",
+    "specialties": [
+      "Nuclear Physics"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 196,
+    "name": "Σπυριδάκης Εμμανουήλ",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Sociology",
+    "role": "Professor",
+    "specialties": [
+      "Social Anthropology"
+    ],
+    "directionAffinities": {
+      "4": 0.5
+    }
+  },
+  {
+    "id": 197,
+    "name": "Σταθοκώστα Βασιλική",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Theology",
+    "role": "Associate Professor",
+    "specialties": [],
+    "directionAffinities": {
+      "5": 0.3
+    }
+  },
+  {
+    "id": 198,
+    "name": "Σταυροπούλου Ερασμία - Λουΐζα",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Philology",
+    "role": "Emeritus Professor",
+    "specialties": [
+      "Modern Greek Philology"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 199,
+    "name": "Σταύρου Χρήστος",
+    "nameEn": null,
+    "domain": "Arts",
+    "field": "Translation Studies",
+    "role": "Laboratory Teaching Staff",
+    "specialties": [
+      "Audiovisual Translation"
+    ],
+    "directionAffinities": {
+      "1": 0.3
+    }
+  },
+  {
+    "id": 200,
+    "name": "Στείρης Γεώργιος",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Philosophy",
+    "role": "Professor",
+    "specialties": [
+      "Medieval Philosophy"
+    ],
+    "directionAffinities": {
+      "5": 0.3
+    }
+  },
+  {
+    "id": 201,
+    "name": "Στεργιάννης Παντελής",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Nursing",
+    "role": "Assistant Professor",
+    "specialties": [
+      "Surgical Nursing"
+    ],
+    "directionAffinities": {
+      "6": 0.3
+    }
+  },
+  {
+    "id": 202,
+    "name": "Στεφανή Ευα",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Media Studies",
+    "role": "Professor",
+    "specialties": [],
+    "directionAffinities": {
+      "3": 0.3
+    }
+  },
+  {
+    "id": 203,
+    "name": "Τζονιχάκη Ιωάννα",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Occupational Therapy",
+    "role": "Professor",
+    "specialties": [],
+    "directionAffinities": {
+      "6": 0.3
+    }
+  },
+  {
+    "id": 204,
+    "name": "Τηλιγάδης Κωνσταντίνος",
+    "nameEn": null,
+    "domain": "Arts",
+    "field": "Visual Arts",
+    "role": "Professor",
+    "specialties": [
+      "3D Animation"
+    ],
+    "directionAffinities": {
+      "1": 0.3,
+      "6": 0.3
+    }
+  },
+  {
+    "id": 205,
+    "name": "Τούντας Iωάννης",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Medicine",
+    "role": "Emeritus Professor",
+    "specialties": [
+      "Social Medicine"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 206,
+    "name": "Τρατσέλα Μαρία",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Architecture",
+    "role": "Assistant Professor",
+    "specialties": [
+      "Landscape Architecture"
+    ],
+    "directionAffinities": {
+      "6": 0.5
+    }
+  },
+  {
+    "id": 207,
+    "name": "Τσακανίκας Άγγελος",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Economics",
+    "role": "Professor",
+    "specialties": [
+      "Innovation Management"
+    ],
+    "directionAffinities": {
+      "2": 0.7
+    }
+  },
+  {
+    "id": 208,
+    "name": "Τσατσάκης Αριστείδης",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Medicine",
+    "role": "Professor",
+    "specialties": [
+      "Toxicology"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 209,
+    "name": "Τσιμάρας Κωνσταντίνος",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Law",
+    "role": "Professor",
+    "specialties": [
+      "Public Law"
+    ],
+    "directionAffinities": {
+      "4": 0.5
+    }
+  },
+  {
+    "id": 210,
+    "name": "Τσιμπουκλή Άννα",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Education",
+    "role": "Assistant Professor",
+    "specialties": [
+      "Adult Education"
+    ],
+    "directionAffinities": {
+      "5": 0.5
+    }
+  },
+  {
+    "id": 211,
+    "name": "Τύμπα Ελένη",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Early Childhood Education",
+    "role": "Assistant Professor",
+    "specialties": [],
+    "directionAffinities": {
+      "5": 0.5
+    }
+  },
+  {
+    "id": 212,
+    "name": "Τύμπας Αριστοτέλης",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "History of Science",
+    "role": "Professor",
+    "specialties": [
+      "History of Technology"
+    ],
+    "directionAffinities": {
+      "5": 0.5
+    }
+  },
+  {
+    "id": 213,
+    "name": "Φασούλης Κωνσταντίνος",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Education",
+    "role": "Emeritus Professor",
+    "specialties": [
+      "Educational Administration"
+    ],
+    "directionAffinities": {
+      "5": 0.5
+    }
+  },
+  {
+    "id": 214,
+    "name": "Φιλοκύπρου Έλλη",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Philology",
+    "role": "Professor",
+    "specialties": [
+      "Modern Greek Philology"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 215,
+    "name": "Φραγκουδάκη Αλεξάνδρα",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Business Administration",
+    "role": "Retired Assistant Professor",
+    "specialties": [
+      "Commercial Management"
+    ],
+    "directionAffinities": {
+      "2": 0.7,
+      "3": 0.3
+    }
+  },
+  {
+    "id": 216,
+    "name": "Χαραλαμπόπουλος Ανέστης",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Medicine",
+    "role": "Professor",
+    "specialties": [
+      "General Surgery"
+    ],
+    "directionAffinities": {
+      "6": 0.5
+    }
+  },
+  {
+    "id": 217,
+    "name": "Χατζηευφραιμίδης Αντώνιος",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Aerospace Engineering",
+    "role": "Professor",
+    "specialties": [],
+    "directionAffinities": {
+      "1": 0.5
+    }
+  },
+  {
+    "id": 218,
+    "name": "Χατζής Αριστείδης",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Philosophy of Science",
+    "role": "Professor",
+    "specialties": [
+      "Philosophy of Law"
+    ],
+    "directionAffinities": {
+      "4": 0.3,
+      "5": 0.5
+    }
+  },
+  {
+    "id": 219,
+    "name": "Χατζηχρήστου Χρυσή (Σίσσυ)",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Psychology",
+    "role": "Professor",
+    "specialties": [
+      "School Psychology"
+    ],
+    "directionAffinities": {
+      "5": 0.5
+    }
+  },
+  {
+    "id": 220,
+    "name": "Χαψούλας Αναστάσιος",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Music Studies",
+    "role": "Professor",
+    "specialties": [
+      "Ethnomusicology"
+    ],
+    "directionAffinities": {
+      "6": 0.7
+    }
+  },
+  {
+    "id": 221,
+    "name": "Χήτα Άννα",
+    "nameEn": null,
+    "domain": "Humanities",
+    "field": "Philology",
+    "role": "Associate Professor",
+    "specialties": [
+      "Applied Linguistics"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 222,
+    "name": "Χουρδάκης Αντώνιος",
+    "nameEn": null,
+    "domain": "Social Sciences",
+    "field": "Education",
+    "role": "Professor",
+    "specialties": [
+      "History of Education"
+    ],
+    "directionAffinities": {
+      "5": 0.7
+    }
+  },
+  {
+    "id": 223,
+    "name": "Χρούσος Π. Γεώργιος",
+    "nameEn": null,
+    "domain": "Health Sciences",
+    "field": "Medicine",
+    "role": "Emeritus Professor",
+    "specialties": [
+      "Pediatrics"
+    ],
+    "directionAffinities": {}
+  },
+  {
+    "id": 224,
+    "name": "Χρυσανθοπούλου Ακριβή",
+    "nameEn": null,
+    "domain": "STEM",
+    "field": "Biology",
+    "role": "Assistant Professor",
+    "specialties": [
+      "Immunology"
+    ],
+    "directionAffinities": {}
+  }
+]
