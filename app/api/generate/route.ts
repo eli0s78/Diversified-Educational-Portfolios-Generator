@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createAIProvider, getServerProvider, type AIProviderType } from "@/lib/ai/providers";
+import { createAIProvider, type AIProviderType } from "@/lib/ai/providers";
 import { buildSystemPrompt, buildCourseOverviewPrompt } from "@/lib/ai/prompts";
 import { getRelevantPapers } from "@/lib/engine/skill-mapper";
 import { TRAINING_DIRECTIONS, CourseOutlineSchema } from "@/lib/engine/portfolio-types";
@@ -43,20 +43,14 @@ export async function POST(request: Request) {
       directionIndex?: number;
     };
 
-    // Create AI provider (use verified modelId if provided to avoid picking inaccessible models)
-    let provider;
-    if (apiKey) {
-      provider = createAIProvider(aiProvider as AIProviderType, apiKey, modelId);
-    } else {
-      provider = getServerProvider();
-    }
-
-    if (!provider) {
+    if (!apiKey) {
       return NextResponse.json(
-        { error: "No AI provider configured. Please provide an API key." },
+        { error: "API key is required. Please provide your API key in Settings." },
         { status: 400 }
       );
     }
+
+    const provider = createAIProvider(aiProvider as AIProviderType, apiKey, modelId);
 
     if (!topics || !papers || !affinityMatrix) {
       return NextResponse.json(

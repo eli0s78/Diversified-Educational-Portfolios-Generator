@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createAIProvider, getServerProvider, type AIProviderType } from "@/lib/ai/providers";
+import { createAIProvider, type AIProviderType } from "@/lib/ai/providers";
 import { buildAnalysisPrompt } from "@/lib/ai/prompts";
 import type { TopicInfo, AnalysisResult } from "@/lib/engine/portfolio-types";
 import { TRAINING_DIRECTIONS } from "@/lib/engine/portfolio-types";
@@ -30,20 +30,14 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create AI provider (use verified modelId if provided to avoid picking inaccessible models)
-    let provider;
-    if (apiKey) {
-      provider = createAIProvider(aiProvider as AIProviderType, apiKey, modelId);
-    } else {
-      provider = getServerProvider();
-    }
-
-    if (!provider) {
+    if (!apiKey) {
       return NextResponse.json(
-        { error: "No AI provider configured. Please provide an API key." },
+        { error: "API key is required. Please provide your API key in Settings." },
         { status: 400 }
       );
     }
+
+    const provider = createAIProvider(aiProvider as AIProviderType, apiKey, modelId);
 
     // Build analysis prompt
     const { systemPrompt, userPrompt } = buildAnalysisPrompt(

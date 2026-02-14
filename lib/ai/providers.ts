@@ -159,16 +159,3 @@ export function createAIProvider(
       throw new Error(`Unknown AI provider: ${type}`);
   }
 }
-
-export function getServerProvider(): AIProvider | null {
-  if (process.env.ANTHROPIC_API_KEY) {
-    return createAIProvider("claude", process.env.ANTHROPIC_API_KEY);
-  }
-  if (process.env.OPENAI_API_KEY) {
-    return createAIProvider("openai", process.env.OPENAI_API_KEY);
-  }
-  if (process.env.GEMINI_API_KEY) {
-    return createAIProvider("gemini", process.env.GEMINI_API_KEY);
-  }
-  return null;
-}
