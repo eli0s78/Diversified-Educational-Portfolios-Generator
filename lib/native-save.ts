@@ -15,7 +15,7 @@ export async function nativeSaveFile(
                 types: [
                     {
                         description,
-                        accept: { [blob.type]: extensions },
+                        accept: { [blob.type.split(';')[0]]: extensions },
                     },
                 ],
             });
