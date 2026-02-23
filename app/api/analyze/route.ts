@@ -41,10 +41,17 @@ export async function POST(request: Request) {
 
     const provider = createAIProvider(apiKey, modelId);
 
+    // Truncate massive PDF texts to heavily reduce AI context window and inference time,
+    // avoiding the strict 60-second Vercel Hobby tier timeout.
+    const TRUNCATION_LIMIT = 15000;
+    const truncatedReports = reportTexts.map(text =>
+      text.length > TRUNCATION_LIMIT ? text.substring(0, TRUNCATION_LIMIT) + "\n...[TRUNCATED FOR LENGTH]" : text
+    );
+
     // Build analysis prompt
     const { systemPrompt, userPrompt } = buildAnalysisPrompt(
       topics,
-      reportTexts,
+      truncatedReports,
       language
     );
 
