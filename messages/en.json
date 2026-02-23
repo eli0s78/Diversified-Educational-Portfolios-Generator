@@ -92,7 +92,11 @@
     "no_project_message": "Create or select a project from the Home page to start uploading data.",
     "go_home": "Go to Home",
     "proceed_to_portfolio": "Proceed to Portfolio",
-    "proceed_to_courses": "Proceed to Generate E-Learning Program"
+    "proceed_to_courses": "Proceed to Generate E-Learning Program",
+    "tab_upload": "Upload Data",
+    "tab_generate": "Generate Data",
+    "generate_tab_title": "Automated Research & Report Generation",
+    "generate_tab_subtitle": "Generate sector reports and metric data for any occupation automatically"
   },
   "analysis": {
     "title": "Sector Analysis",
