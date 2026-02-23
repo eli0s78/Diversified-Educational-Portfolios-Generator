@@ -16,9 +16,12 @@ import {
   X,
   Globe,
   Settings,
+  Sun,
+  Moon,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ProjectSwitcher from "@/components/layout/ProjectSwitcher";
+import { getStoredTheme, setStoredTheme, type Theme } from "@/lib/theme";
 
 const NAV_ITEMS = [
   { key: "home", href: "/", icon: Home },
@@ -35,6 +38,21 @@ export default function Navbar() {
   const locale = useLocale();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [theme, setTheme] = useState<Theme>("system");
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const stored = getStoredTheme();
+    setTheme(stored);
+    setIsDark(document.documentElement.classList.contains("dark"));
+  }, []);
+
+  const cycleTheme = () => {
+    const next: Theme = theme === "system" ? "light" : theme === "light" ? "dark" : "system";
+    setStoredTheme(next);
+    setTheme(next);
+    setIsDark(document.documentElement.classList.contains("dark"));
+  };
 
   const switchLocale = () => {
     const newLocale = locale === "en" ? "el" : "en";
@@ -93,6 +111,14 @@ export default function Navbar() {
             >
               <Settings className="h-4 w-4" />
             </Link>
+
+            <button
+              onClick={cycleTheme}
+              className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              title={theme === "system" ? "System theme" : theme === "light" ? "Light theme" : "Dark theme"}
+            >
+              {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </button>
 
             <button
               onClick={switchLocale}

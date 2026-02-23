@@ -6,6 +6,7 @@ import {
   useState,
   useEffect,
   useCallback,
+  useRef,
   type ReactNode,
 } from "react";
 import type { ProjectData, ProjectIndexEntry } from "@/lib/project-manager";
@@ -23,6 +24,14 @@ import {
   migrateLegacyData,
 } from "@/lib/project-manager";
 
+export interface UploadFiles {
+  pdfFiles: File[];
+  topicsFile: File | null;
+  papersFile: File | null;
+}
+
+const EMPTY_UPLOAD_FILES: UploadFiles = { pdfFiles: [], topicsFile: null, papersFile: null };
+
 interface ProjectContextValue {
   currentProject: ProjectData | null;
   projects: ProjectIndexEntry[];
@@ -35,6 +44,8 @@ interface ProjectContextValue {
   refreshProjects: () => void;
   refreshCurrentProject: () => void;
   updateProject: (project: ProjectData) => void;
+  uploadFiles: UploadFiles;
+  setUploadFiles: React.Dispatch<React.SetStateAction<UploadFiles>>;
 }
 
 const ProjectContext = createContext<ProjectContextValue | null>(null);
@@ -42,13 +53,26 @@ const ProjectContext = createContext<ProjectContextValue | null>(null);
 export function ProjectProvider({ children }: { children: ReactNode }) {
   const [currentProject, setCurrentProject] = useState<ProjectData | null>(null);
   const [projects, setProjects] = useState<ProjectIndexEntry[]>([]);
+  const [uploadFiles, setUploadFiles] = useState<UploadFiles>(EMPTY_UPLOAD_FILES);
+  const prevProjectIdRef = useRef<string | null>(null);
 
   // Initialize on mount
   useEffect(() => {
     migrateLegacyData();
     setProjects(listProjects());
-    setCurrentProject(getCurrentProject());
+    const project = getCurrentProject();
+    setCurrentProject(project);
+    prevProjectIdRef.current = project?.id ?? null;
   }, []);
+
+  // Clear upload files when project changes
+  useEffect(() => {
+    const newId = currentProject?.id ?? null;
+    if (prevProjectIdRef.current !== null && newId !== prevProjectIdRef.current) {
+      setUploadFiles(EMPTY_UPLOAD_FILES);
+    }
+    prevProjectIdRef.current = newId;
+  }, [currentProject?.id]);
 
   const refreshProjects = useCallback(() => {
     setProjects(listProjects());
@@ -100,9 +124,13 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     return project;
   }, []);
 
-  const exportCurrentProjectFn = useCallback(() => {
+  const exportCurrentProjectFn = useCallback(async () => {
     if (currentProject) {
-      exportProjectToFile(currentProject);
+      try {
+        await exportProjectToFile(currentProject);
+      } catch (err) {
+        console.error("Export error:", err);
+      }
     }
   }, [currentProject]);
 
@@ -126,6 +154,8 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
         refreshProjects,
         refreshCurrentProject,
         updateProject,
+        uploadFiles,
+        setUploadFiles,
       }}
     >
       {children}

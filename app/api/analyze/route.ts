@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { createAIProvider, type AIProviderType } from "@/lib/ai/providers";
+import { createAIProvider } from "@/lib/ai/providers";
 import { buildAnalysisPrompt } from "@/lib/ai/prompts";
+import { buildAnalysisSchema } from "@/lib/ai/gemini-schemas";
 import type { TopicInfo, AnalysisResult } from "@/lib/engine/portfolio-types";
 import { TRAINING_DIRECTIONS } from "@/lib/engine/portfolio-types";
 
@@ -11,14 +12,12 @@ export async function POST(request: Request) {
       topics,
       reportTexts = [],
       language = "en",
-      aiProvider = "claude",
       apiKey,
       modelId,
     } = body as {
       topics: TopicInfo[];
       reportTexts: string[];
       language: "en" | "el";
-      aiProvider: string;
       apiKey?: string;
       modelId?: string;
     };
@@ -32,12 +31,12 @@ export async function POST(request: Request) {
 
     if (!apiKey) {
       return NextResponse.json(
-        { error: "API key is required. Please provide your API key in Settings." },
+        { error: "API key is required. Please provide your Gemini API key in Settings." },
         { status: 400 }
       );
     }
 
-    const provider = createAIProvider(aiProvider as AIProviderType, apiKey, modelId);
+    const provider = createAIProvider(apiKey, modelId);
 
     // Build analysis prompt
     const { systemPrompt, userPrompt } = buildAnalysisPrompt(
@@ -46,12 +45,17 @@ export async function POST(request: Request) {
       language
     );
 
-    // Generate with AI
+    // Build structured output schema (used by Gemini, ignored by others)
+    const activeTopicNumbers = topics
+      .filter((t) => t.topicNumber !== -1)
+      .map((t) => t.topicNumber);
+    const responseSchema = buildAnalysisSchema(activeTopicNumbers);
+
     const rawResponse = await provider.generate({
       systemPrompt,
       userPrompt,
-      temperature: 0.3,
       maxTokens: 8192,
+      responseSchema,
     });
 
     // Parse JSON response

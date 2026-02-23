@@ -92,6 +92,8 @@ export interface SourceData {
   reports: Array<{ name: string; textContent: string }>;
   topics: TopicInfo[];
   papers: Paper[];
+  topicsFileName?: string;
+  papersFileName?: string;
 }
 
 // ============================================================
@@ -181,6 +183,57 @@ export const CourseOutlineSchema = z.object({
   modules: z.array(ModuleSchema),
 });
 export type CourseOutline = z.infer<typeof CourseOutlineSchema>;
+
+// ============================================================
+// Industry Demand Benchmarks
+// ============================================================
+
+/**
+ * Industry demand benchmarks for each training direction.
+ * Based on the Kanzola & Petrakis (2024) foresight framework analysis.
+ * Values sum to 1.0 and represent relative emphasis in the current labor market.
+ */
+export const INDUSTRY_DEMAND: Record<string, number> = {
+  new_technologies: 0.25,
+  trend_analysis: 0.18,
+  sales_techniques: 0.15,
+  negotiation_hr: 0.15,
+  personal_growth_theory: 0.12,
+  personal_growth_practical: 0.15,
+};
+
+/**
+ * Find the frontier point whose weights best match industry demand.
+ * Returns the index of the frontier point that minimizes
+ * the sum of squared differences: Σ(weight_i - demand_i)²
+ */
+export function findMarketAlignedIndex(
+  frontier: Array<{ weights: number[] }>
+): number {
+  if (frontier.length === 0) return 0;
+
+  const demandValues = TRAINING_DIRECTIONS.map(
+    (dir) => INDUSTRY_DEMAND[dir.key] || 0
+  );
+
+  let bestIdx = 0;
+  let bestGap = Infinity;
+
+  for (let i = 0; i < frontier.length; i++) {
+    const weights = frontier[i].weights;
+    let totalGap = 0;
+    for (let d = 0; d < demandValues.length; d++) {
+      const diff = (weights[d] || 0) - demandValues[d];
+      totalGap += diff * diff;
+    }
+    if (totalGap < bestGap) {
+      bestGap = totalGap;
+      bestIdx = i;
+    }
+  }
+
+  return bestIdx;
+}
 
 // ============================================================
 // Academic Supervisor Matching

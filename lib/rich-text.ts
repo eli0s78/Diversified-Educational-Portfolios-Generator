@@ -49,8 +49,19 @@ export function parseBoldSegments(text: string): RichSegment[] {
 export function parseRichContent(content: string): RichBlock[] {
   const blocks: RichBlock[] = [];
 
+  // Replace literal <br> tags (raw HTML or encoded) with structural newlines
+  let sanitizedContent = content.replace(/(<br\s*\/?>|&lt;br\s*\/?&gt;)/gi, "\n");
+
+  // Auto-bold ALL-CAPS headers (e.g., "RATIONALE & CONTEXT:") and force them into new paragraphs
+  // Matches start-of-line or whitespace, 3+ uppercase letters/spaces/ampersands/slashes/dashes/parentheses, and a colon
+  sanitizedContent = sanitizedContent.replace(/(^|\n|\s+)([A-Z][A-Z\s&*/\-()]{2,}):(\s+|$)/g, (match, prefix, title, suffix) => {
+    // If it's already at the start, don't add extra newlines, otherwise force a double newline (paragraph break)
+    const isStart = prefix === '' || prefix === '\n';
+    return (isStart ? prefix : '\n\n') + `**${title.trim()}:**` + suffix;
+  });
+
   // Split by newlines first
-  const lines = content.split(/\n+/);
+  const lines = sanitizedContent.split(/\n+/);
 
   for (const line of lines) {
     const trimmed = line.trim();

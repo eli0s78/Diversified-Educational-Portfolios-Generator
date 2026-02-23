@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getSettings } from "@/lib/project-manager";
+import { getActiveProviderSettings } from "@/lib/project-manager";
 import { PageContainer } from "@/components/ui/PageContainer";
 import HeroSection from "@/components/home/HeroSection";
 import ProjectsDashboard from "@/components/home/ProjectsDashboard";
@@ -15,8 +15,8 @@ export default function HomePage() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const settings = getSettings();
-    setHasAI(!!settings.apiKey);
+    const { apiKey } = getActiveProviderSettings();
+    setHasAI(!!apiKey);
     setReady(true);
   }, []);
 

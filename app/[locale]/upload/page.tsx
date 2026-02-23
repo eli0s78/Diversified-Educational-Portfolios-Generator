@@ -12,8 +12,7 @@ import {
   Loader2,
   CheckCircle2,
   XCircle,
-  ChevronDown,
-  ChevronUp,
+  X,
   Sparkles,
   BarChart3,
   GraduationCap,
@@ -25,63 +24,101 @@ import { extractTextFromPDF } from "@/lib/pdf-extract";
 import {
   getCurrentProject,
   saveProject,
-  getSettings,
+  getActiveProviderSettings,
 } from "@/lib/project-manager";
 import { useProject } from "@/lib/project-context";
+import { Badge } from "@/components/ui/Badge";
+import {
+  RefreshCw,
+  Database,
+  FolderOpen,
+} from "lucide-react";
+import { EmptyState } from "@/components/ui/EmptyState";
 import type { TopicInfo, Paper } from "@/lib/engine/portfolio-types";
 
 const PIPELINE_STEPS = [
   { key: "parse", icon: Table2 },
   { key: "analyze", icon: Sparkles },
-  { key: "optimize", icon: BarChart3 },
-  { key: "generate", icon: GraduationCap },
 ] as const;
 
 export default function UploadPage() {
   const t = useTranslations("upload");
   const locale = useLocale();
   const router = useRouter();
-  const { refreshCurrentProject } = useProject();
+  const { currentProject, refreshCurrentProject, uploadFiles, setUploadFiles } = useProject();
 
-  // File state
-  const [pdfFiles, setPdfFiles] = useState<File[]>([]);
-  const [topicsFile, setTopicsFile] = useState<File | null>(null);
-  const [papersFile, setPapersFile] = useState<File | null>(null);
+  // File state (persisted in context across tab switches)
+  const pdfFiles = uploadFiles.pdfFiles;
+  const topicsFile = uploadFiles.topicsFile;
+  const papersFile = uploadFiles.papersFile;
+  const setPdfFiles = useCallback((updater: File[] | ((prev: File[]) => File[])) => {
+    setUploadFiles((prev) => ({
+      ...prev,
+      pdfFiles: typeof updater === "function" ? updater(prev.pdfFiles) : updater,
+    }));
+  }, [setUploadFiles]);
+  const setTopicsFile = useCallback((file: File | null) => {
+    setUploadFiles((prev) => ({ ...prev, topicsFile: file }));
+  }, [setUploadFiles]);
+  const setPapersFile = useCallback((file: File | null) => {
+    setUploadFiles((prev) => ({ ...prev, papersFile: file }));
+  }, [setUploadFiles]);
 
   // Pipeline state
   const [pipelineStep, setPipelineStep] = useState(-1); // -1 = not started
   const [pipelineError, setPipelineError] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
 
-  // Optional config
-  const [configOpen, setConfigOpen] = useState(false);
-  const [programInstructions, setProgramInstructions] = useState("");
-  const [educationLevel, setEducationLevel] = useState<string>("bachelor");
+  // Existing data from previous pipeline run
+  interface ExistingData {
+    reportNames: string[];
+    topicsFileName: string | null;
+    papersFileName: string | null;
+    topicCount: number;
+    paperCount: number;
+  }
+  const [existingData, setExistingData] = useState<ExistingData | null>(null);
 
   const pdfInputRef = useRef<HTMLInputElement>(null);
   const topicsInputRef = useRef<HTMLInputElement>(null);
   const papersInputRef = useRef<HTMLInputElement>(null);
 
-  // Load existing config on mount
+  // Load config and existing data on mount/project switch
   useEffect(() => {
-    const project = getCurrentProject();
-    if (!project) {
-      router.push("/");
+    if (!currentProject) {
       return;
     }
-    setProgramInstructions(project.config.programInstructions || "");
-    setEducationLevel(project.config.educationLevel || "bachelor");
-
-    // If pipeline was already completed, show status
-    if (project.pipelineStatus === "complete") {
-      setPipelineStep(4);
+    // Show existing data if available
+    if (currentProject.sourceData) {
+      setExistingData({
+        reportNames: currentProject.sourceData.reports.map((r) => r.name),
+        topicsFileName: currentProject.sourceData.topicsFileName || null,
+        papersFileName: currentProject.sourceData.papersFileName || null,
+        topicCount: currentProject.sourceData.topics.filter((t) => t.topicNumber !== -1).length,
+        paperCount: currentProject.sourceData.papers.length,
+      });
+    } else {
+      setExistingData(null);
     }
-  }, [router]);
 
-  const canStart = topicsFile !== null;
+    setPipelineError(currentProject.pipelineError || null);
+    setRunning(false);
+
+    // If pipeline was already completed for analysis
+    if (currentProject.pipelineStatus === "complete") {
+      setPipelineStep(2);
+    } else if (currentProject.pipelineStatus === "error") {
+      setPipelineStep(currentProject.pipelineStep ?? -1);
+    } else {
+      setPipelineStep(-1);
+    }
+  }, [currentProject, router]);
+
+  const canStart = topicsFile !== null || existingData !== null;
 
   const runPipeline = useCallback(async () => {
-    if (!topicsFile) return;
+    const useExisting = !topicsFile && existingData !== null;
+    if (!topicsFile && !useExisting) return;
 
     setRunning(true);
     setPipelineError(null);
@@ -93,49 +130,65 @@ export default function UploadPage() {
       return;
     }
 
-    const settings = getSettings();
+    const active = getActiveProviderSettings();
 
     try {
-      // Step 0: Parse files
-      setPipelineStep(0);
-      project.pipelineStatus = "analyzing";
-      project.pipelineStep = 0;
-      project.config.programInstructions = programInstructions;
-      project.config.educationLevel = educationLevel as "high_school" | "bachelor" | "master" | "phd";
-      saveProject(project);
+      let topics: TopicInfo[];
+      let papers: Paper[];
+      let reportTexts: string[];
 
-      // Parse Topics CSV
-      const topicsText = await topicsFile.text();
-      const topics: TopicInfo[] = parseTopicsCSV(topicsText);
+      if (useExisting && project.sourceData) {
+        // Re-analyze: skip file parsing, use existing source data
+        setPipelineStep(0);
+        project.pipelineStatus = "analyzing";
+        project.pipelineStep = 0;
+        saveProject(project);
 
-      if (topics.length === 0) {
-        throw new Error("No topics found in CSV. Check the file format.");
+        topics = project.sourceData.topics;
+        papers = project.sourceData.papers;
+        reportTexts = project.sourceData.reports.map((r) => r.textContent);
+      } else {
+        // Step 0: Parse new files
+        setPipelineStep(0);
+        project.pipelineStatus = "analyzing";
+        project.pipelineStep = 0;
+        saveProject(project);
+
+        // Parse Topics CSV
+        const topicsText = await topicsFile!.text();
+        topics = parseTopicsCSV(topicsText);
+
+        if (topics.length === 0) {
+          throw new Error("No topics found in CSV. Check the file format.");
+        }
+
+        // Parse Papers CSV (optional)
+        papers = [];
+        if (papersFile) {
+          const papersText = await papersFile.text();
+          papers = parsePapersCSV(papersText);
+        }
+
+        // Extract PDF texts
+        reportTexts = [];
+        for (const pdf of pdfFiles) {
+          const text = await extractTextFromPDF(pdf);
+          reportTexts.push(text);
+        }
+
+        // Save source data
+        project.sourceData = {
+          reports: pdfFiles.map((f, i) => ({
+            name: f.name,
+            textContent: reportTexts[i] || "",
+          })),
+          topics,
+          papers,
+          topicsFileName: topicsFile!.name,
+          papersFileName: papersFile?.name,
+        };
+        saveProject(project);
       }
-
-      // Parse Papers CSV (optional)
-      let papers: Paper[] = [];
-      if (papersFile) {
-        const papersText = await papersFile.text();
-        papers = parsePapersCSV(papersText);
-      }
-
-      // Extract PDF texts
-      const reportTexts: string[] = [];
-      for (const pdf of pdfFiles) {
-        const text = await extractTextFromPDF(pdf);
-        reportTexts.push(text);
-      }
-
-      // Save source data
-      project.sourceData = {
-        reports: pdfFiles.map((f, i) => ({
-          name: f.name,
-          textContent: reportTexts[i] || "",
-        })),
-        topics,
-        papers,
-      };
-      saveProject(project);
 
       // Step 1: AI Analysis
       setPipelineStep(1);
@@ -149,9 +202,8 @@ export default function UploadPage() {
           topics,
           reportTexts,
           language: locale,
-          aiProvider: settings.aiProvider || "claude",
-          apiKey: settings.apiKey || undefined,
-          modelId: settings.verifiedModel || undefined,
+          apiKey: active.apiKey || undefined,
+          modelId: active.verifiedModel || undefined,
         }),
       });
 
@@ -165,97 +217,14 @@ export default function UploadPage() {
       project.name = analysis.programTitle || analysis.sectorName || project.name;
       saveProject(project);
 
-      // Step 2: Portfolio Optimization
-      setPipelineStep(2);
-      project.pipelineStatus = "optimizing";
-      project.pipelineStep = 2;
-      saveProject(project);
-
-      const optimizeRes = await fetch("/api/optimize", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          topics,
-          affinityMatrix: analysis.affinityMatrix,
-          riskTolerance: 0.5,
-        }),
-      });
-
-      if (!optimizeRes.ok) {
-        const err = await optimizeRes.json().catch(() => ({}));
-        throw new Error(err.error || `Optimization failed (${optimizeRes.status})`);
-      }
-
-      const optData = await optimizeRes.json();
-
-      // Normalize frontier
-      const frontier = (optData.frontier || []).map(
-        (p: { risk: number; return: number; weights: number[]; sharpe_ratio: number }) => ({
-          risk: p.risk,
-          return_: p.return,
-          weights: p.weights,
-          sharpeRatio: p.sharpe_ratio,
-        })
-      );
-      const sel = optData.selected_portfolio || optData.frontier?.[0] || {};
-      const weights = sel.weights || [];
-      const hhi = weights.reduce((sum: number, w: number) => sum + w * w, 0);
-
-      project.portfolioResult = {
-        frontier,
-        selectedPortfolio: {
-          weights,
-          expectedReturn: sel.return ?? 0,
-          risk: sel.risk ?? 0,
-          sharpeRatio: sel.sharpe_ratio ?? 0,
-          diversificationScore: 1 - hhi,
-        },
-        riskTolerance: 0.5,
-      };
-      saveProject(project);
-
-      // Step 3: Course Generation
-      setPipelineStep(3);
-      project.pipelineStatus = "generating";
-      project.pipelineStep = 3;
-      saveProject(project);
-
-      const generateRes = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          weights,
-          topics,
-          papers,
-          affinityMatrix: analysis.affinityMatrix,
-          sectorName: analysis.sectorName,
-          sectorDescription: analysis.sectorDescription,
-          programTitle: analysis.programTitle,
-          programInstructions: project.config.programInstructions || "",
-          targetAudience: analysis.targetAudience,
-          educationLevel: analysis.educationLevel || project.config.educationLevel,
-          language: locale,
-          aiProvider: settings.aiProvider || "claude",
-          apiKey: settings.apiKey || undefined,
-          modelId: settings.verifiedModel || undefined,
-        }),
-      });
-
-      if (!generateRes.ok) {
-        const err = await generateRes.json().catch(() => ({}));
-        throw new Error(err.error || `Generation failed (${generateRes.status})`);
-      }
-
-      const genData = await generateRes.json();
-      project.courses = genData.courses;
       project.pipelineStatus = "complete";
-      project.pipelineStep = 4;
+      project.pipelineStep = 2;
       project.pipelineError = null;
       saveProject(project);
       refreshCurrentProject();
 
-      setPipelineStep(4);
-      // Auto-redirect after completion
+      setPipelineStep(2);
+      // Auto-redirect after analysis completion
       setTimeout(() => {
         router.push("/analysis");
       }, 1500);
@@ -268,7 +237,7 @@ export default function UploadPage() {
       refreshCurrentProject();
       setRunning(false);
     }
-  }, [topicsFile, papersFile, pdfFiles, programInstructions, educationLevel, locale, router]);
+  }, [topicsFile, papersFile, pdfFiles, existingData, locale, router]);
 
   const handlePdfDrop = (e: React.DragEvent) => {
     e.preventDefault();
@@ -289,7 +258,27 @@ export default function UploadPage() {
     if (file) setter(file);
   };
 
-  const pipelineComplete = pipelineStep === 4;
+  const pipelineComplete = pipelineStep === 2;
+
+  if (!currentProject) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <EmptyState
+          icon={FolderOpen}
+          title={t("no_project_title")}
+          message={t("no_project_message")}
+          action={
+            <button
+              onClick={() => router.push("/")}
+              className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-hover"
+            >
+              {t("go_home")}
+            </button>
+          }
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
@@ -297,6 +286,78 @@ export default function UploadPage() {
       <p className="mb-8 text-muted-foreground">{t("subtitle")}</p>
 
       <div className="space-y-6">
+        {/* Existing Data Summary */}
+        {existingData && (
+          <div className="rounded-xl border border-border bg-card p-5">
+            <div className="mb-4 flex items-center gap-2">
+              <Database className="h-5 w-5 text-primary" />
+              <h3 className="text-sm font-semibold">{t("existing_data")}</h3>
+              {pipelineStep === 2 && (
+                <Badge variant="success">{t("pipeline_complete_badge")}</Badge>
+              )}
+            </div>
+
+            {/* Uploaded files list */}
+            <div className="mb-4 space-y-2">
+              {/* Topics CSV — always present */}
+              {existingData.topicsFileName && (
+                <div className="flex items-center gap-2.5 rounded-lg border border-border px-3 py-2">
+                  <Table2 className="h-4 w-4 shrink-0 text-success" />
+                  <span className="min-w-0 flex-1 truncate text-sm font-medium">{existingData.topicsFileName}</span>
+                  <span className="shrink-0 text-xs text-muted-foreground">
+                    {existingData.topicCount} {t("topics_count").toLowerCase()}
+                  </span>
+                </div>
+              )}
+              {!existingData.topicsFileName && (
+                <div className="flex items-center gap-2.5 rounded-lg border border-border px-3 py-2">
+                  <Table2 className="h-4 w-4 shrink-0 text-success" />
+                  <span className="min-w-0 flex-1 text-sm font-medium">{t("topics_label")}</span>
+                  <span className="shrink-0 text-xs text-muted-foreground">
+                    {existingData.topicCount} {t("topics_count").toLowerCase()}
+                  </span>
+                </div>
+              )}
+
+              {/* Papers CSV — optional */}
+              {existingData.paperCount > 0 && (
+                <div className="flex items-center gap-2.5 rounded-lg border border-border px-3 py-2">
+                  <Table2 className="h-4 w-4 shrink-0 text-success" />
+                  <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                    {existingData.papersFileName || t("papers_label")}
+                  </span>
+                  <span className="shrink-0 text-xs text-muted-foreground">
+                    {existingData.paperCount} {t("papers_count").toLowerCase()}
+                  </span>
+                </div>
+              )}
+
+              {/* PDF reports */}
+              {existingData.reportNames.map((name, i) => (
+                <div key={i} className="flex items-center gap-2.5 rounded-lg border border-border px-3 py-2">
+                  <FileText className="h-4 w-4 shrink-0 text-primary" />
+                  <span className="min-w-0 flex-1 truncate text-sm font-medium">{name}</span>
+                  <span className="shrink-0 text-xs text-muted-foreground">PDF</span>
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={runPipeline}
+              disabled={running}
+              className={cn(
+                "flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium transition-colors",
+                running
+                  ? "bg-muted text-muted-foreground cursor-not-allowed"
+                  : "bg-primary/10 text-primary hover:bg-primary/20"
+              )}
+            >
+              <RefreshCw className={cn("h-4 w-4", running && "animate-spin")} />
+              {t("reanalyze")}
+            </button>
+          </div>
+        )}
+
         {/* PDF Reports Dropzone */}
         <div>
           <label className="mb-2 block text-sm font-semibold">
@@ -324,6 +385,16 @@ export default function UploadPage() {
                   >
                     <FileText className="h-3 w-3" />
                     {f.name}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setPdfFiles((prev) => prev.filter((_, idx) => idx !== i));
+                      }}
+                      className="ml-0.5 rounded-full p-0.5 transition-colors hover:bg-primary/20"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
                   </span>
                 ))}
               </div>
@@ -366,6 +437,16 @@ export default function UploadPage() {
               <span className="flex items-center gap-2 text-sm font-medium text-success">
                 <CheckCircle2 className="h-4 w-4" />
                 {topicsFile.name}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setTopicsFile(null);
+                  }}
+                  className="ml-1 rounded-full p-0.5 transition-colors hover:bg-destructive/10 hover:text-destructive"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
               </span>
             ) : (
               <p className="text-sm text-muted-foreground">
@@ -409,6 +490,16 @@ export default function UploadPage() {
               <span className="flex items-center gap-2 text-sm font-medium text-success">
                 <CheckCircle2 className="h-4 w-4" />
                 {papersFile.name}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPapersFile(null);
+                  }}
+                  className="ml-1 rounded-full p-0.5 transition-colors hover:bg-destructive/10 hover:text-destructive"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
               </span>
             ) : (
               <p className="text-sm text-muted-foreground">
@@ -426,60 +517,6 @@ export default function UploadPage() {
               if (file) setPapersFile(file);
             }}
           />
-        </div>
-
-        {/* Optional Configuration */}
-        <div className="rounded-xl border border-border bg-card overflow-hidden">
-          <button
-            onClick={() => setConfigOpen(!configOpen)}
-            className="flex w-full items-center justify-between px-5 py-3 text-left text-sm font-semibold transition-colors hover:bg-muted/30"
-          >
-            {t("config_title")}
-            {configOpen ? (
-              <ChevronUp className="h-4 w-4 text-muted-foreground" />
-            ) : (
-              <ChevronDown className="h-4 w-4 text-muted-foreground" />
-            )}
-          </button>
-          {configOpen && (
-            <div className="border-t border-border px-5 py-4 space-y-4">
-              <div>
-                <label className="mb-1.5 block text-sm font-medium">
-                  {t("instructions_label")}
-                </label>
-                <textarea
-                  value={programInstructions}
-                  onChange={(e) => setProgramInstructions(e.target.value)}
-                  rows={3}
-                  className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-y"
-                  placeholder={t("instructions_placeholder")}
-                />
-              </div>
-              <div>
-                <label className="mb-1.5 block text-sm font-medium">
-                  {t("education_label")}
-                </label>
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  {(["high_school", "bachelor", "master", "phd"] as const).map(
-                    (level) => (
-                      <button
-                        key={level}
-                        onClick={() => setEducationLevel(level)}
-                        className={cn(
-                          "rounded-lg border px-3 py-2 text-sm font-medium transition-colors",
-                          educationLevel === level
-                            ? "border-primary bg-primary/10 text-primary"
-                            : "border-border hover:bg-muted"
-                        )}
-                      >
-                        {t(`education_levels.${level}`)}
-                      </button>
-                    )
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Pipeline Progress */}
@@ -540,15 +577,17 @@ export default function UploadPage() {
           </div>
         )}
 
-        {/* Generate Button */}
+        {/* Generate / View Results Button */}
         <button
-          onClick={runPipeline}
-          disabled={!canStart || running}
+          onClick={pipelineComplete ? () => router.push("/analysis") : runPipeline}
+          disabled={pipelineComplete ? false : (!canStart || running)}
           className={cn(
             "flex w-full items-center justify-center gap-2 rounded-xl py-4 text-lg font-semibold transition-colors",
-            canStart && !running
-              ? "bg-primary text-white hover:bg-primary-hover"
-              : "bg-muted text-muted-foreground cursor-not-allowed"
+            pipelineComplete
+              ? "bg-success text-white hover:bg-success/90"
+              : canStart && !running
+                ? "bg-primary text-white hover:bg-primary-hover"
+                : "bg-muted text-muted-foreground cursor-not-allowed"
           )}
         >
           {running ? (
@@ -564,7 +603,7 @@ export default function UploadPage() {
           ) : (
             <>
               <Upload className="h-5 w-5" />
-              {t("generate_btn")}
+              {t("pipeline_analyze")}
             </>
           )}
         </button>

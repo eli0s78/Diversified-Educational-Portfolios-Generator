@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { createAIProvider, type AIProviderType } from "@/lib/ai/providers";
+import { createAIProvider } from "@/lib/ai/providers";
 import { buildSystemPrompt, buildCourseOverviewPrompt } from "@/lib/ai/prompts";
+import { COURSE_OUTLINE_SCHEMA } from "@/lib/ai/gemini-schemas";
 import { getRelevantPapers } from "@/lib/engine/skill-mapper";
 import { TRAINING_DIRECTIONS, CourseOutlineSchema } from "@/lib/engine/portfolio-types";
 import type { TopicInfo, Paper } from "@/lib/engine/portfolio-types";
-import { getSupervisorsForDirections } from "@/lib/db/queries";
+import { matchSupervisorsToCoursesContentBased } from "@/lib/db/queries";
 
 export async function POST(request: Request) {
   try {
@@ -21,7 +22,6 @@ export async function POST(request: Request) {
       targetAudience = "",
       educationLevel = "bachelor",
       language = "en",
-      aiProvider = "claude",
       apiKey,
       modelId,
       directionIndex,
@@ -37,7 +37,6 @@ export async function POST(request: Request) {
       targetAudience: string;
       educationLevel: string;
       language: "en" | "el";
-      aiProvider: string;
       apiKey?: string;
       modelId?: string;
       directionIndex?: number;
@@ -45,12 +44,12 @@ export async function POST(request: Request) {
 
     if (!apiKey) {
       return NextResponse.json(
-        { error: "API key is required. Please provide your API key in Settings." },
+        { error: "API key is required. Please provide your Gemini API key in Settings." },
         { status: 400 }
       );
     }
 
-    const provider = createAIProvider(aiProvider as AIProviderType, apiKey, modelId);
+    const provider = createAIProvider(apiKey, modelId);
 
     if (!topics || !papers || !affinityMatrix) {
       return NextResponse.json(
@@ -101,12 +100,11 @@ export async function POST(request: Request) {
         sectorDescription
       );
 
-      // Generate with AI
       const rawResponse = await provider.generate({
         systemPrompt,
         userPrompt,
-        temperature: 0.5,
-        maxTokens: 8192,
+        maxTokens: 65536,
+        responseSchema: COURSE_OUTLINE_SCHEMA,
       });
 
       // Parse and validate JSON response
@@ -125,6 +123,11 @@ export async function POST(request: Request) {
           `Failed to parse course for direction ${direction.name}:`,
           parseError
         );
+        require('fs').writeFileSync('debug_generation_error.log', JSON.stringify({
+          error: parseError instanceof Error ? parseError.message : String(parseError),
+          rawResponse: rawResponse
+        }, null, 2));
+
         // Add a placeholder course
         courses.push({
           title: `${direction.name} - Course`,
@@ -150,11 +153,10 @@ export async function POST(request: Request) {
       }
     }
 
-    // Auto-match supervisors for each generated course's training direction
+    // Content-based supervisor matching: scores against actual course content
     let supervisors: Record<string, unknown[]> = {};
     try {
-      const directionKeys = courses.map((c) => c.trainingDirection);
-      supervisors = getSupervisorsForDirections(directionKeys, 3);
+      supervisors = matchSupervisorsToCoursesContentBased(courses, 3);
     } catch (err) {
       console.warn("Supervisor matching skipped:", err);
     }

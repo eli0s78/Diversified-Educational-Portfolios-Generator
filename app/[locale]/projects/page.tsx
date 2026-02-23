@@ -75,10 +75,14 @@ export default function ProjectsPage() {
     router.push("/upload");
   };
 
-  const handleExport = (id: string) => {
+  const handleExport = async (id: string) => {
     const project = loadProject(id);
     if (project) {
-      exportProjectToFile(project);
+      try {
+        await exportProjectToFile(project);
+      } catch (err) {
+        console.error("Export error:", err);
+      }
     }
   };
 

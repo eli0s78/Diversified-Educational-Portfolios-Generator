@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 
 interface EmptyStateProps {
   icon: LucideIcon;
+  title?: string;
   message: string;
   action?: ReactNode;
   className?: string;
@@ -11,6 +12,7 @@ interface EmptyStateProps {
 
 export function EmptyState({
   icon: Icon,
+  title,
   message,
   action,
   className,
@@ -22,8 +24,9 @@ export function EmptyState({
         className
       )}
     >
-      <Icon className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-      <p className="mb-6 text-lg text-muted-foreground">{message}</p>
+      <Icon className="mx-auto mb-4 h-12 w-12 text-muted-foreground/50" />
+      {title && <h2 className="mb-2 text-lg font-semibold">{title}</h2>}
+      <p className="mb-6 text-sm text-muted-foreground">{message}</p>
       {action}
     </div>
   );

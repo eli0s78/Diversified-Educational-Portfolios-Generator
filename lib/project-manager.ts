@@ -1,4 +1,5 @@
 import type { CourseOutline, SourceData, AnalysisResult, PipelineStatus, SupervisorMatch } from "@/lib/engine/portfolio-types";
+import { nativeSaveFile } from "@/lib/native-save";
 
 // ============================================================
 // Types
@@ -6,7 +7,6 @@ import type { CourseOutline, SourceData, AnalysisResult, PipelineStatus, Supervi
 
 export interface AppSettings {
   name: string;
-  aiProvider: "claude" | "openai" | "gemini";
   apiKey: string;
   verifiedModel?: string;
   verifiedTier?: "free" | "paid" | null;
@@ -22,6 +22,19 @@ export interface ProjectIndexEntry {
 export interface ProjectConfig {
   programInstructions: string;
   educationLevel: "high_school" | "bachelor" | "master" | "phd";
+}
+
+export interface SavedPortfolio {
+  id: string;
+  label: string;
+  savedAt: string;
+  riskTolerance: number;
+  weights: number[];
+  expectedReturn: number;
+  risk: number;
+  sharpeRatio: number;
+  diversificationScore: number;
+  isOptimized?: boolean;
 }
 
 export interface ProjectPortfolioResult {
@@ -52,6 +65,9 @@ export interface ProjectData {
   portfolioResult: ProjectPortfolioResult | null;
   courses: CourseOutline[];
   courseSupervisors: Record<string, SupervisorMatch[]> | null; // key = trainingDirectionKey
+  savedPortfolios: SavedPortfolio[];
+  activePortfolioId: string | null;
+  generatedWithPortfolioId: string | null;
   pipelineStatus: PipelineStatus;
   pipelineError: string | null;
   pipelineStep: number;
@@ -105,16 +121,65 @@ function writeJSON(key: string, value: unknown): void {
 
 const DEFAULT_SETTINGS: AppSettings = {
   name: "",
-  aiProvider: "claude",
   apiKey: "",
 };
 
 export function getSettings(): AppSettings {
-  return readJSON(KEYS.SETTINGS, DEFAULT_SETTINGS);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const raw = readJSON<any>(KEYS.SETTINGS, DEFAULT_SETTINGS);
+
+  // Migrate from old multi-provider format
+  if ("providers" in raw && typeof raw.providers === "object") {
+    const geminiKey = raw.providers?.gemini?.apiKey ||
+      raw.providers?.[raw.activeProvider]?.apiKey || "";
+    const geminiModel = raw.providers?.gemini?.verifiedModel ||
+      raw.providers?.[raw.activeProvider]?.verifiedModel;
+    const geminiTier = raw.providers?.gemini?.verifiedTier ||
+      raw.providers?.[raw.activeProvider]?.verifiedTier;
+    const migrated: AppSettings = {
+      name: raw.name || "",
+      apiKey: geminiKey,
+      verifiedModel: geminiModel,
+      verifiedTier: geminiTier,
+    };
+    saveSettings(migrated);
+    return migrated;
+  }
+
+  // Migrate from even older single-key format
+  if ("aiProvider" in raw && !("providers" in raw)) {
+    const migrated: AppSettings = {
+      name: raw.name || "",
+      apiKey: raw.apiKey || "",
+      verifiedModel: raw.verifiedModel,
+      verifiedTier: raw.verifiedTier,
+    };
+    saveSettings(migrated);
+    return migrated;
+  }
+
+  return {
+    name: raw.name || "",
+    apiKey: raw.apiKey || "",
+    verifiedModel: raw.verifiedModel,
+    verifiedTier: raw.verifiedTier,
+  };
 }
 
 export function saveSettings(settings: AppSettings): void {
   writeJSON(KEYS.SETTINGS, settings);
+}
+
+/** Get the Gemini API key and verified model info */
+export function getActiveProviderSettings(): {
+  apiKey: string;
+  verifiedModel?: string;
+} {
+  const s = getSettings();
+  return {
+    apiKey: s.apiKey,
+    verifiedModel: s.verifiedModel,
+  };
 }
 
 // ============================================================
@@ -174,6 +239,9 @@ export function createNewProject(): ProjectData {
     portfolioResult: null,
     courses: [],
     courseSupervisors: null,
+    savedPortfolios: [],
+    activePortfolioId: null,
+    generatedWithPortfolioId: null,
     pipelineStatus: "idle",
     pipelineError: null,
     pipelineStep: 0,
@@ -227,16 +295,12 @@ export function getCurrentProject(): ProjectData | null {
 // File Export / Import
 // ============================================================
 
-export function exportProjectToFile(project: ProjectData): void {
+export async function exportProjectToFile(project: ProjectData): Promise<void> {
   const json = JSON.stringify(project, null, 2);
   const blob = new Blob([json], { type: "application/json;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  const safeName = (project.name || "project").replace(/[^a-zA-Z0-9_-]/g, "_");
-  a.download = `${safeName}.dep.json`;
-  a.click();
-  URL.revokeObjectURL(url);
+  let safeName = (project.name || "project").replace(/[<>:"/\\|?*\x00-\x1F]/g, "").trim().replace(/\s+/g, "_");
+  if (!safeName) safeName = "project";
+  await nativeSaveFile(blob, `${safeName}.dep.json`, ['.dep.json', '.json'], 'DEP Project File');
 }
 
 export function importProjectFromFile(file: File): Promise<ProjectData> {
@@ -266,6 +330,9 @@ export function importProjectFromFile(file: File): Promise<ProjectData> {
           portfolioResult: raw.portfolioResult || null,
           courses: Array.isArray(raw.courses) ? raw.courses : [],
           courseSupervisors: raw.courseSupervisors || null,
+          savedPortfolios: Array.isArray(raw.savedPortfolios) ? raw.savedPortfolios : [],
+          activePortfolioId: raw.activePortfolioId || null,
+          generatedWithPortfolioId: raw.generatedWithPortfolioId || null,
           pipelineStatus: raw.pipelineStatus || (raw.courses?.length > 0 ? "complete" : "idle"),
           pipelineError: raw.pipelineError || null,
           pipelineStep: raw.pipelineStep ?? 0,
@@ -300,11 +367,11 @@ export function migrateLegacyData(): boolean {
     const profile = JSON.parse(legacyProfile);
 
     // Extract app settings
-    saveSettings({
+    const migratedSettings: AppSettings = {
       name: profile.name || "",
-      aiProvider: profile.aiProvider || "claude",
       apiKey: profile.apiKey || "",
-    });
+    };
+    saveSettings(migratedSettings);
 
     // Create project from remaining fields
     const project = createNewProject();

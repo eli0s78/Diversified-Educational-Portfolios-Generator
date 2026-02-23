@@ -3,6 +3,8 @@
 import { useTranslations } from "next-intl";
 import { useLocale } from "next-intl";
 import { useState, useEffect, useCallback } from "react";
+import { Link } from "@/lib/i18n/navigation";
+import { cn } from "@/lib/utils";
 import { TRAINING_DIRECTIONS, type CourseOutline, type SupervisorMatch } from "@/lib/engine/portfolio-types";
 import {
   BookOpen,
@@ -15,18 +17,24 @@ import {
   Loader2,
   Target,
   UserCheck,
+  AlertTriangle,
+  BarChart3,
+  FolderOpen,
+  ChevronUp,
+  Settings,
 } from "lucide-react";
 import { parseRichContent, type RichBlock } from "@/lib/rich-text";
 import {
   getCurrentProject,
   saveProject,
-  getSettings,
+  getActiveProviderSettings,
 } from "@/lib/project-manager";
 import { useProject } from "@/lib/project-context";
 import { PageContainer } from "@/components/ui/PageContainer";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
+import LearningPath from "@/components/courses/LearningPath";
 
 function RichContent({ content }: { content: string }) {
   const blocks = parseRichContent(content);
@@ -80,27 +88,42 @@ function RichContent({ content }: { content: string }) {
 export default function CoursesPage() {
   const t = useTranslations("courses");
   const locale = useLocale();
-  const { refreshCurrentProject } = useProject();
+  const { currentProject, refreshCurrentProject } = useProject();
   const [courses, setCourses] = useState<CourseOutline[]>([]);
   const [supervisors, setSupervisors] = useState<Record<string, SupervisorMatch[]>>({});
+  const [weights, setWeights] = useState<number[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
   const [expandedUnits, setExpandedUnits] = useState<Set<string>>(new Set());
+
+  // Generation config
+  const [programInstructions, setProgramInstructions] = useState("");
+  const [educationLevel, setEducationLevel] = useState<string>("bachelor");
+  const [configOpen, setConfigOpen] = useState(true);
+
+  // Portfolio linkage tracking
+  const [generatedWithLabel, setGeneratedWithLabel] = useState<string | null>(null);
+  const [portfolioMismatch, setPortfolioMismatch] = useState(false);
+  const [activePortfolioLabel, setActivePortfolioLabel] = useState<string | null>(null);
 
   const generateCourses = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const project = getCurrentProject();
-      const settings = getSettings();
+      const active = getActiveProviderSettings();
 
       if (!project) {
         setError(t("no_project"));
         return;
       }
 
-      const weights = project.portfolioResult?.selectedPortfolio.weights;
+      // Use the active saved portfolio's weights if available, otherwise fall back to selectedPortfolio
+      const activePortfolio = project.activePortfolioId
+        ? project.savedPortfolios.find((p) => p.id === project.activePortfolioId)
+        : null;
+      const weights = activePortfolio?.weights || project.portfolioResult?.selectedPortfolio.weights;
       if (!weights) {
         setError(t("no_weights"));
         return;
@@ -110,6 +133,11 @@ export default function CoursesPage() {
         setError(t("no_project"));
         return;
       }
+
+      // Save config before generating
+      project.config.programInstructions = programInstructions;
+      project.config.educationLevel = educationLevel as "high_school" | "bachelor" | "master" | "phd";
+      saveProject(project);
 
       const res = await fetch("/api/generate", {
         method: "POST",
@@ -126,9 +154,8 @@ export default function CoursesPage() {
           targetAudience: project.analysis.targetAudience,
           educationLevel: project.analysis.educationLevel || project.config.educationLevel,
           language: locale,
-          aiProvider: settings.aiProvider || "claude",
-          apiKey: settings.apiKey || undefined,
-          modelId: settings.verifiedModel || undefined,
+          apiKey: active.apiKey || undefined,
+          modelId: active.verifiedModel || undefined,
         }),
       });
 
@@ -138,13 +165,18 @@ export default function CoursesPage() {
         if (data.supervisors) {
           setSupervisors(data.supervisors);
         }
-        // Save courses + supervisors to active project
-        if (project) {
-          project.courses = data.courses;
-          project.courseSupervisors = data.supervisors || null;
-          saveProject(project);
-          refreshCurrentProject();
-        }
+        // Save courses + supervisors + generation portfolio ID to project
+        project.courses = data.courses;
+        project.courseSupervisors = data.supervisors || null;
+        project.generatedWithPortfolioId = project.activePortfolioId || null;
+        saveProject(project);
+        refreshCurrentProject();
+
+        // Update local tracking state
+        const genLabel = activePortfolio?.label || null;
+        setGeneratedWithLabel(genLabel);
+        setPortfolioMismatch(false);
+        setActivePortfolioLabel(genLabel);
       } else {
         const data = await res.json().catch(() => ({}));
         setError(data.error || `Generation failed (${res.status})`);
@@ -155,25 +187,67 @@ export default function CoursesPage() {
     } finally {
       setLoading(false);
     }
-  }, [locale, t]);
+  }, [locale, t, refreshCurrentProject]);
 
-  // Load cached courses + supervisors from project on mount
-  useEffect(() => {
-    const project = getCurrentProject();
-    if (project && project.courses.length > 0) {
-      setCourses(project.courses);
-      if (project.courseSupervisors) {
-        setSupervisors(project.courseSupervisors);
-      }
-    }
-  }, []);
-
-  // Check if generation is possible (has portfolio weights)
+  // Load cached courses + supervisors from project, detect portfolio mismatch
   const [canGenerate, setCanGenerate] = useState(false);
   useEffect(() => {
-    const project = getCurrentProject();
-    setCanGenerate(!!project?.portfolioResult?.selectedPortfolio.weights);
-  }, []);
+    if (currentProject?.courses && currentProject.courses.length > 0) {
+      setCourses(currentProject.courses);
+      setSupervisors(currentProject.courseSupervisors || {});
+
+      // Track which portfolio was used for generation
+      if (currentProject.generatedWithPortfolioId) {
+        const genPortfolio = currentProject.savedPortfolios.find(
+          (p) => p.id === currentProject.generatedWithPortfolioId
+        );
+        setGeneratedWithLabel(genPortfolio?.label || null);
+      } else {
+        setGeneratedWithLabel(null);
+      }
+
+      // Detect mismatch between generation portfolio and current active portfolio
+      if (
+        currentProject.activePortfolioId &&
+        currentProject.generatedWithPortfolioId &&
+        currentProject.activePortfolioId !== currentProject.generatedWithPortfolioId
+      ) {
+        setPortfolioMismatch(true);
+        const activeP = currentProject.savedPortfolios.find(
+          (p) => p.id === currentProject.activePortfolioId
+        );
+        setActivePortfolioLabel(activeP?.label || null);
+      } else {
+        setPortfolioMismatch(false);
+        setActivePortfolioLabel(null);
+      }
+    } else {
+      setCourses([]);
+      setSupervisors({});
+      setGeneratedWithLabel(null);
+      setPortfolioMismatch(false);
+
+      if (currentProject?.activePortfolioId) {
+        const activeP = currentProject.savedPortfolios.find(
+          (p) => p.id === currentProject.activePortfolioId
+        );
+        setActivePortfolioLabel(activeP?.label || null);
+      } else {
+        setActivePortfolioLabel(null);
+      }
+    }
+    if (currentProject?.portfolioResult?.selectedPortfolio?.weights) {
+      setWeights(currentProject.portfolioResult.selectedPortfolio.weights);
+    } else {
+      setWeights([]);
+    }
+    setCanGenerate(!!currentProject?.portfolioResult?.selectedPortfolio?.weights);
+    setExpandedModules(new Set());
+    setExpandedUnits(new Set());
+    // Load generation config
+    setProgramInstructions(currentProject?.config?.programInstructions || "");
+    setEducationLevel(currentProject?.config?.educationLevel || "bachelor");
+  }, [currentProject]);
 
   const toggleModule = (key: string) => {
     setExpandedModules((prev) => {
@@ -224,21 +298,107 @@ export default function CoursesPage() {
     );
   }
 
-  if (courses.length === 0) {
+  if (!currentProject) {
     return (
       <PageContainer size="md">
         <EmptyState
-          icon={BookOpen}
-          message={canGenerate ? t("no_courses") : t("no_weights")}
+          icon={FolderOpen}
+          title={t("no_project_title")}
+          message={t("no_project_message")}
           action={
-            canGenerate ? (
-              <Button onClick={generateCourses} variant="primary" size="lg">
-                <BookOpen className="h-4 w-4" />
-                {t("generate_btn")}
-              </Button>
-            ) : undefined
+            <Link
+              href="/"
+              className="inline-block rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-hover"
+            >
+              {t("go_home")}
+            </Link>
           }
         />
+      </PageContainer>
+    );
+  }
+
+  if (!canGenerate && courses.length === 0) {
+    return (
+      <PageContainer size="md">
+        <EmptyState
+          icon={BarChart3}
+          title={t("no_weights_title")}
+          message={t("no_weights")}
+          action={
+            <Link
+              href="/portfolio"
+              className="inline-block rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-hover"
+            >
+              {t("go_portfolio")}
+            </Link>
+          }
+        />
+      </PageContainer>
+    );
+  }
+
+  if (canGenerate && courses.length === 0) {
+    return (
+      <PageContainer size="md">
+        <PageHeader title={t("title")} subtitle={t("no_courses")} />
+
+        {activePortfolioLabel && (
+          <div className="mb-6 flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-4 py-3 text-sm text-foreground">
+            <BarChart3 className="h-5 w-5 shrink-0 text-primary" />
+            <span>
+              {locale === "el" ? "Ενεργό Χαρτοφυλάκιο" : "Active Portfolio"}: <strong className="text-primary">{activePortfolioLabel}</strong>
+            </span>
+          </div>
+        )}
+
+        {/* Generation Settings */}
+        <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+          <h3 className="flex items-center gap-2 text-sm font-semibold">
+            <Settings className="h-4 w-4 text-muted-foreground" />
+            {t("config_title")}
+          </h3>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium">
+              {t("education_label")}
+            </label>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {(["high_school", "bachelor", "master", "phd"] as const).map(
+                (level) => (
+                  <button
+                    key={level}
+                    onClick={() => setEducationLevel(level)}
+                    className={cn(
+                      "rounded-lg border px-3 py-2 text-sm font-medium transition-colors",
+                      educationLevel === level
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border hover:bg-muted"
+                    )}
+                  >
+                    {t(`education_levels.${level}`)}
+                  </button>
+                )
+              )}
+            </div>
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium">
+              {t("instructions_label")}
+            </label>
+            <textarea
+              value={programInstructions}
+              onChange={(e) => setProgramInstructions(e.target.value)}
+              rows={3}
+              className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-y"
+              placeholder={t("instructions_placeholder")}
+            />
+          </div>
+        </div>
+
+        <Button onClick={generateCourses} variant="primary" size="lg" className="mt-6 w-full">
+          <BookOpen className="h-5 w-5" />
+          {t("generate_btn")}
+        </Button>
       </PageContainer>
     );
   }
@@ -255,6 +415,106 @@ export default function CoursesPage() {
           </Button>
         }
       />
+
+      {/* Portfolio linkage info */}
+      {generatedWithLabel && !portfolioMismatch && (
+        <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-4 py-2.5 text-sm text-muted-foreground">
+          <BarChart3 className="h-4 w-4 shrink-0" />
+          <span>
+            {t("generated_with")}: <strong className="text-foreground">{generatedWithLabel}</strong>
+          </span>
+        </div>
+      )}
+
+      {/* Portfolio mismatch warning */}
+      {portfolioMismatch && (
+        <div className="flex flex-col gap-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 dark:border-amber-700 dark:bg-amber-950/30 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-2 text-sm">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+            <div>
+              <p className="font-medium text-amber-800 dark:text-amber-200">
+                {t("portfolio_changed")}
+              </p>
+              {generatedWithLabel && (
+                <p className="mt-0.5 text-xs text-amber-700 dark:text-amber-300">
+                  {t("generated_with")}: {generatedWithLabel}
+                </p>
+              )}
+            </div>
+          </div>
+          <Button
+            onClick={generateCourses}
+            variant="primary"
+            size="sm"
+            className="shrink-0"
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+            {t("regenerate_prompt")}{activePortfolioLabel ? ` (${activePortfolioLabel})` : ""}
+          </Button>
+        </div>
+      )}
+
+      {/* Generation Settings (collapsible) */}
+      <div className="rounded-xl border border-border bg-card overflow-hidden">
+        <button
+          onClick={() => setConfigOpen(!configOpen)}
+          className="flex w-full items-center justify-between px-5 py-3 text-left text-sm font-semibold transition-colors hover:bg-muted/30"
+        >
+          <span className="flex items-center gap-2">
+            <Settings className="h-4 w-4 text-muted-foreground" />
+            {t("config_title")}
+          </span>
+          {configOpen ? (
+            <ChevronUp className="h-4 w-4 text-muted-foreground" />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          )}
+        </button>
+        {configOpen && (
+          <div className="border-t border-border px-5 py-4 space-y-4">
+            <div>
+              <label className="mb-1.5 block text-sm font-medium">
+                {t("education_label")}
+              </label>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {(["high_school", "bachelor", "master", "phd"] as const).map(
+                  (level) => (
+                    <button
+                      key={level}
+                      onClick={() => setEducationLevel(level)}
+                      className={cn(
+                        "rounded-lg border px-3 py-2 text-sm font-medium transition-colors",
+                        educationLevel === level
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border hover:bg-muted"
+                      )}
+                    >
+                      {t(`education_levels.${level}`)}
+                    </button>
+                  )
+                )}
+              </div>
+            </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium">
+                {t("instructions_label")}
+              </label>
+              <textarea
+                value={programInstructions}
+                onChange={(e) => setProgramInstructions(e.target.value)}
+                rows={3}
+                className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-y"
+                placeholder={t("instructions_placeholder")}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Learning Path Sequencing */}
+      {weights.length > 0 && (
+        <LearningPath courses={courses} locale={locale} weights={weights} />
+      )}
 
       <div className="space-y-6">
         {courses.map((course, courseIdx) => {
@@ -282,9 +542,9 @@ export default function CoursesPage() {
                   </span>
                 </div>
                 <h2 className="text-xl font-bold">{course.title}</h2>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  {course.overview}
-                </p>
+                <div className="mt-2 text-sm text-muted-foreground space-y-2">
+                  <RichContent content={course.overview} />
+                </div>
 
                 {/* Assigned Supervisors */}
                 {supervisors[course.trainingDirection]?.length > 0 && (

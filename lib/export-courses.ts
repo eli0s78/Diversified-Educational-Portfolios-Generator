@@ -7,10 +7,12 @@ import {
   AlignmentType,
   PageBreak,
 } from "docx";
-import { saveAs } from "file-saver";
 import type { CourseOutline, SupervisorMatch } from "@/lib/engine/portfolio-types";
 import { TRAINING_DIRECTIONS } from "@/lib/engine/portfolio-types";
+import { nativeSaveFile } from "@/lib/native-save";
+import type { ProjectPortfolioResult } from "@/lib/project-manager";
 import { parseRichContent, type RichSegment } from "@/lib/rich-text";
+import { getSettings } from "@/lib/project-manager";
 
 // ─────────────────────────────────────────────────
 // Shared helpers
@@ -23,7 +25,8 @@ function getDirectionName(key: string, locale: string): string {
 }
 
 function sanitizeFileName(name: string): string {
-  return name.replace(/[^a-zA-Z0-9_\- ]/g, "").replace(/\s+/g, "_");
+  const safe = name.replace(/[<>:"/\\|?*\x00-\x1F]/g, "").trim().replace(/\s+/g, "_");
+  return safe || "Course_Outlines";
 }
 
 // ─────────────────────────────────────────────────
@@ -316,14 +319,14 @@ export async function exportCoursesToDocx(
   }
 
   const doc = new Document({
-    creator: "Diversified Educational Portfolios Generator",
+    creator: getSettings().name || "Diversified Educational Portfolios Generator",
     title: programTitle || "Course Outlines",
     sections: [{ children }],
   });
 
   const blob = await Packer.toBlob(doc);
   const fileName = sanitizeFileName(programTitle || "Course_Outlines") + ".docx";
-  saveAs(blob, fileName);
+  await nativeSaveFile(blob, fileName, ['.docx'], 'Word Document');
 }
 
 // ─────────────────────────────────────────────────
@@ -415,7 +418,7 @@ function renderRichContentPdf(
   maxWidth: number,
   fontSize: number,
   fontFamily: string,
-  checkPageBreak: (needed: number) => void
+  checkPageBreak: (currentY: number, needed: number) => number
 ): number {
   let y = startY;
   const blocks = parseRichContent(content);
@@ -431,7 +434,7 @@ function renderRichContentPdf(
 
       // Render number in bold
       doc.setFont(fontFamily, "bold");
-      checkPageBreak(lineHeight + 2);
+      y = checkPageBreak(y, lineHeight + 2);
       doc.text(numText, x + indent, y);
       const numWidth = doc.getTextWidth(numText);
 
@@ -443,7 +446,7 @@ function renderRichContentPdf(
       y += 1;
     } else {
       // Paragraph
-      checkPageBreak(lineHeight + 2);
+      y = checkPageBreak(y, lineHeight + 2);
       y = renderSegmentsPdf(
         doc, block.segments, x, y,
         maxWidth, lineHeight, fontFamily, checkPageBreak
@@ -468,7 +471,7 @@ function renderSegmentsPdf(
   maxWidth: number,
   lineHeight: number,
   fontFamily: string,
-  checkPageBreak: (needed: number) => void
+  checkPageBreak: (currentY: number, needed: number) => number
 ): number {
   let x = startX;
   let y = startY;
@@ -488,7 +491,7 @@ function renderSegmentsPdf(
       if (x + wordWidth > startX + maxWidth && x > startX && word.trim()) {
         x = startX;
         y += lineHeight;
-        checkPageBreak(lineHeight);
+        y = checkPageBreak(y, lineHeight);
       }
 
       // Skip leading whitespace on a new line
@@ -504,6 +507,152 @@ function renderSegmentsPdf(
 }
 
 // ─────────────────────────────────────────────────
+// PDF Portfolio Charts
+// ─────────────────────────────────────────────────
+
+/** Parse CSS var(--direction-N) to RGB. Fallback colors if CSS vars unavailable. */
+const DIRECTION_RGB: [number, number, number][] = [
+  [59, 130, 246],   // blue
+  [139, 92, 246],   // violet
+  [245, 158, 11],   // amber
+  [239, 68, 68],    // red
+  [16, 185, 129],   // emerald
+  [6, 182, 212],    // cyan
+];
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function renderPortfolioCharts(
+  doc: any,
+  portfolio: ProjectPortfolioResult,
+  locale: string,
+  margin: number,
+  contentWidth: number,
+  ff: string
+): number {
+  let y = margin;
+  const sel = portfolio.selectedPortfolio;
+  const weights = sel.weights;
+
+  // Section title
+  doc.setFontSize(18);
+  doc.setFont(ff, "bold");
+  doc.setTextColor(37, 99, 235);
+  doc.text(
+    locale === "el" ? "Ανάλυση Χαρτοφυλακίου" : "Portfolio Analysis",
+    margin,
+    y
+  );
+  y += 12;
+
+  // Stats row
+  const stats = [
+    {
+      label: locale === "el" ? "Αναμενόμενη Αξία" : "Expected Return",
+      value: `${(sel.expectedReturn * 100).toFixed(1)}%`,
+      color: [37, 99, 235] as [number, number, number],
+    },
+    {
+      label: locale === "el" ? "Κίνδυνος" : "Risk",
+      value: `${(sel.risk * 100).toFixed(1)}%`,
+      color: [139, 92, 246] as [number, number, number],
+    },
+    {
+      label: locale === "el" ? "Αποδοτικότητα" : "Sharpe Ratio",
+      value: sel.sharpeRatio.toFixed(2),
+      color: [16, 185, 129] as [number, number, number],
+    },
+    {
+      label: locale === "el" ? "Διαφοροποίηση" : "Diversification",
+      value: `${(sel.diversificationScore * 100).toFixed(0)}%`,
+      color: [245, 158, 11] as [number, number, number],
+    },
+  ];
+
+  const boxWidth = (contentWidth - 12) / 4;
+  const boxHeight = 22;
+
+  for (let i = 0; i < stats.length; i++) {
+    const bx = margin + i * (boxWidth + 4);
+    // Background box
+    doc.setFillColor(248, 250, 252);
+    doc.roundedRect(bx, y, boxWidth, boxHeight, 2, 2, "F");
+    // Label
+    doc.setFontSize(7);
+    doc.setFont(ff, "normal");
+    doc.setTextColor(100, 116, 139);
+    doc.text(stats[i].label.toUpperCase(), bx + 3, y + 6);
+    // Value
+    doc.setFontSize(14);
+    doc.setFont(ff, "bold");
+    doc.setTextColor(...stats[i].color);
+    doc.text(stats[i].value, bx + 3, y + 16);
+  }
+  y += boxHeight + 10;
+
+  // Weight allocation bars
+  doc.setFontSize(13);
+  doc.setFont(ff, "bold");
+  doc.setTextColor(30, 41, 59);
+  doc.text(
+    locale === "el" ? "Κατανομή Βαρών" : "Weight Allocation",
+    margin,
+    y
+  );
+  y += 8;
+
+  const barMaxWidth = contentWidth - 50;
+  const barHeight = 7;
+  const barSpacing = 12;
+
+  for (let i = 0; i < TRAINING_DIRECTIONS.length; i++) {
+    const dir = TRAINING_DIRECTIONS[i];
+    const weight = weights[i] || 0;
+    const label = locale === "el" ? dir.name_el : dir.name;
+
+    // Direction label
+    doc.setFontSize(8);
+    doc.setFont(ff, "normal");
+    doc.setTextColor(30, 41, 59);
+    const truncLabel = label.length > 45 ? label.slice(0, 42) + "..." : label;
+    doc.text(truncLabel, margin, y);
+    y += 3;
+
+    // Background bar
+    doc.setFillColor(241, 245, 249);
+    doc.roundedRect(margin, y, barMaxWidth, barHeight, 1.5, 1.5, "F");
+
+    // Filled bar
+    const fillWidth = Math.max(1, weight * barMaxWidth);
+    const [r, g, b] = DIRECTION_RGB[i] || [100, 100, 100];
+    doc.setFillColor(r, g, b);
+    doc.roundedRect(margin, y, fillWidth, barHeight, 1.5, 1.5, "F");
+
+    // Percentage text
+    doc.setFontSize(8);
+    doc.setFont(ff, "bold");
+    doc.setTextColor(30, 41, 59);
+    doc.text(`${(weight * 100).toFixed(1)}%`, margin + barMaxWidth + 3, y + 5);
+
+    y += barSpacing;
+  }
+
+  y += 4;
+
+  // Risk tolerance
+  doc.setFontSize(9);
+  doc.setFont(ff, "normal");
+  doc.setTextColor(100, 116, 139);
+  doc.text(
+    `${locale === "el" ? "Ανοχή Κινδύνου" : "Risk Tolerance"}: ${(portfolio.riskTolerance * 100).toFixed(0)}%`,
+    margin,
+    y
+  );
+  y += 8;
+
+  return y;
+}
+
+// ─────────────────────────────────────────────────
 // PDF Export
 // ─────────────────────────────────────────────────
 
@@ -511,7 +660,8 @@ export async function exportCoursesToPdf(
   courses: CourseOutline[],
   supervisors: Record<string, SupervisorMatch[]>,
   programTitle: string,
-  locale: string
+  locale: string,
+  portfolioResult?: ProjectPortfolioResult | null
 ): Promise<void> {
   const { default: jsPDF } = await import("jspdf");
   const { default: autoTable } = await import("jspdf-autotable");
@@ -531,6 +681,15 @@ export async function exportCoursesToPdf(
       doc.addPage();
       y = margin;
     }
+  };
+
+  const checkPageBreakWithY = (currentY: number, needed: number): number => {
+    const pageHeight = doc.internal.pageSize.getHeight();
+    if (currentY + needed > pageHeight - margin) {
+      doc.addPage();
+      return margin;
+    }
+    return currentY;
   };
 
   // ── Title Page ──
@@ -553,6 +712,13 @@ export async function exportCoursesToPdf(
   doc.setFont(ff, "italic");
   const meta = `${courses.length} ${locale === "el" ? "μαθήματα" : "courses"} — ${new Date().toLocaleDateString(locale)}`;
   doc.text(meta, pageWidth / 2, y, { align: "center" });
+
+  // ── Portfolio Analysis Page ──
+  if (portfolioResult) {
+    doc.addPage();
+    y = margin;
+    y = renderPortfolioCharts(doc, portfolioResult, locale, margin, contentWidth, ff);
+  }
 
   // ── Table of Contents ──
   doc.addPage();
@@ -611,7 +777,7 @@ export async function exportCoursesToPdf(
     doc.text(locale === "el" ? "Επισκόπηση" : "Overview", margin, y);
     y += 6;
 
-    y = renderRichContentPdf(doc, course.overview, margin, y, contentWidth, 10, ff, checkPageBreak);
+    y = renderRichContentPdf(doc, course.overview, margin, y, contentWidth, 10, ff, checkPageBreakWithY);
     y += 2;
 
     // Supervisors
@@ -714,7 +880,7 @@ export async function exportCoursesToPdf(
         // Content — rich text with bold and numbered lists
         doc.setTextColor(30, 41, 59);
         y = renderRichContentPdf(
-          doc, unit.content, margin, y, contentWidth, 10, ff, checkPageBreak
+          doc, unit.content, margin, y, contentWidth, 10, ff, checkPageBreakWithY
         );
 
         // Unit objectives
@@ -781,5 +947,6 @@ export async function exportCoursesToPdf(
   }
 
   const fileName = sanitizeFileName(programTitle || "Course_Outlines") + ".pdf";
-  doc.save(fileName);
+  const blob = doc.output("blob");
+  await nativeSaveFile(blob, fileName, ['.pdf'], 'PDF Document');
 }

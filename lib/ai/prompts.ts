@@ -40,12 +40,46 @@ ${SKILL_CATEGORIES.map((c) => `- ${c.name}: ${c.description}`).join("\n")}
 THE 6 TRAINING DIRECTIONS:
 ${TRAINING_DIRECTIONS.map((d) => `${d.id}. ${d.name}: ${d.description}`).join("\n")}
 
-IMPORTANT GUIDELINES:
+IMPORTANT GUIDELINES FOR CONTENT DEPTH AND QUALITY:
+1. THEORETICAL RIGOR:
+   - Reference specific, named theoretical frameworks (e.g., Cynefin Framework, SRK Model, Dual Process Theory, MAUT)
+   - Cite academic authors when discussing concepts (e.g., "Rasmussen's SRK model", "Kahneman & Tversky's Dual Process Theory")
+   - Ground each concept in established academic literature
+   - Explain WHY frameworks matter before explaining WHAT they are
+
+2. METHODOLOGICAL SPECIFICITY:
+   - Name specific techniques and tools (e.g., ESBJSA, FTA, Scenario Analysis, LCA, SWOT)
+   - Provide context for when and why each method is applied
+   - Explain trade-offs and limitations, not just benefits
+
+3. MULTI-LAYERED EXPLANATIONS:
+   - Each unit should have 3-5 substantial paragraphs
+   - Start with rationale and context (why this matters)
+   - Progress to theoretical foundations (concepts, models, frameworks)
+   - Include practical applications with concrete examples
+   - Address challenges, nuances, and real-world complexity
+
+4. SUBSECTOR SPECIFICITY:
+   - Break down applications by industry subsectors when relevant (e.g., construction vs. manufacturing vs. textiles vs. mining)
+   - Provide sector-specific examples, not generic ones
+   - Reference industry-specific standards, regulations, or practices
+
+5. INTEGRATION & CROSS-REFERENCES:
+   - Explain how each unit connects to MPT/diversification strategy
+   - Cross-reference other modules or units when concepts relate
+   - Show how skills compound across the portfolio
+
+6. PRACTICAL EXERCISES:
+   - Include mini case studies or scenario-based applications
+   - Provide concrete tasks learners should be able to perform
+   - Reference real-world challenges from the sector
+
+7. ACADEMIC CITATIONS:
+   - Reference papers provided in the topic data
+   - Use author-year format when discussing research (e.g., "According to Smith et al., 2023...")
+   - Ground claims in empirical evidence
+
 - Design content appropriate for the specified education level and target audience
-- Reference actual academic papers when provided
-- Balance theoretical foundations with practical applications
-- Explain how each module contributes to a diversified, risk-optimized professional development strategy
-- Consider the MPT analogy: "diversification reduces risk" in the context of skills
 - Follow any specific program instructions provided above
 ${lang}
 
@@ -89,28 +123,46 @@ ${sectorKnowledge}
 
 Generate a JSON object with this exact structure:
 {
-  "title": "Course title (concise, professional)",
-  "overview": "Course overview (200-300 words explaining objectives and relevance to the sector)",
+  "title": "Course title (concise, professional, sector-specific)",
+  "overview": "COMPREHENSIVE COURSE OVERVIEW (400-600 words):
+
+  Paragraph 1: Course purpose and strategic importance for the sector, connection to broader professional development and portfolio diversification strategy.
+
+  Paragraph 2: Core competencies addressed, theoretical foundations (name key frameworks/models), practical applications across subsectors.
+
+  Paragraph 3: Learning approach (theoretical grounding, practical applications, case studies), expected outcomes upon completion.
+
+  Paragraph 4: Integration with other training directions, contribution to building a resilient, diversified professional skill set.",
   "trainingDirection": "${direction.key}",
   "totalHours": number (25-40),
   "modules": [
     {
       "moduleNumber": 1,
       "title": "Theory & Literature",
-      "description": "Module description (100-150 words)",
-      "learningObjectives": ["objective 1", "objective 2", "objective 3"],
+      "description": "Module description (150-250 words) — explain the theoretical foundations this module establishes, why they matter for practice, and how they contribute to portfolio diversification",
+      "learningObjectives": ["specific measurable objective 1", "specific measurable objective 2", "specific measurable objective 3"],
       "units": [
         {
           "unitNumber": 1,
-          "title": "Unit title",
-          "content": "Detailed content outline (500-800 words covering key concepts, theoretical frameworks, practical applications, real-world examples)",
-          "learningObjectives": ["specific objective 1", "specific objective 2"],
-          "skillTags": ["skill1", "skill2", "skill3"],
-          "paperReferences": ["Paper title 1", "Paper title 2"],
-          "estimatedMinutes": number (60-120)
+          "title": "Unit title (specific, descriptive)",
+          "content": "MULTI-PARAGRAPH DETAILED CONTENT (800-1200 words minimum):
+
+          Paragraph 1: RATIONALE & CONTEXT — Why this unit matters for the sector, what challenges it addresses, how it fits into professional development strategy.
+
+          Paragraph 2-3: THEORETICAL FOUNDATIONS — Specific named frameworks/models (e.g., 'Cynefin Framework', 'Rasmussen's SRK Model'), academic references (author-year), core concepts with nuanced explanations.
+
+          Paragraph 4-5: PRACTICAL APPLICATIONS — Subsector-specific examples (e.g., construction vs. manufacturing), concrete techniques/methodologies, real-world implementation challenges.
+
+          Paragraph 6 (if applicable): INTEGRATION — How this connects to other units/modules, contribution to diversified skill portfolio, cross-cutting competencies.
+
+          Final paragraph: PRACTICAL EXERCISE/SCENARIO — A mini case study or concrete application task learners should practice.",
+          "learningObjectives": ["specific, measurable objective 1", "specific, measurable objective 2", "specific, measurable objective 3"],
+          "skillTags": ["specific skill1", "specific skill2", "specific skill3"],
+          "paperReferences": ["Specific paper title or 'Author et al., YEAR'", "Another paper reference"],
+          "estimatedMinutes": number (90-120)
         },
-        { "unitNumber": 2, ... },
-        { "unitNumber": 3, ... }
+        { "unitNumber": 2, ... (follow same depth pattern) },
+        { "unitNumber": 3, ... (follow same depth pattern) }
       ]
     },
     {
@@ -164,24 +216,28 @@ export function buildModulePrompt(
 TOPIC KEYWORDS TO INCORPORATE: ${topicKeywords}
 PAPER REFERENCES TO CITE: ${paperRefs}
 
-Generate a JSON object with 3 units, each containing:
+Generate a JSON object with 3 units, each containing DEEP, ANALYTICAL content:
 {
   "moduleNumber": ${moduleNumber},
   "title": "${moduleTitle}",
-  "description": "Module description (100-150 words)",
-  "learningObjectives": ["objective 1", "objective 2", "objective 3"],
+  "description": "Module description (150-250 words explaining the module's role in building a diversified skill portfolio)",
+  "learningObjectives": ["objective 1 (specific, measurable)", "objective 2", "objective 3"],
   "units": [
     {
       "unitNumber": 1,
-      "title": "Unit title",
-      "content": "Detailed content (500-800 words) covering key concepts, frameworks, applications, and connection to the diversified portfolio approach",
-      "learningObjectives": ["specific objective"],
-      "skillTags": ["skill1", "skill2"],
-      "paperReferences": ["Paper title"],
-      "estimatedMinutes": 90
+      "title": "Unit title (specific and descriptive)",
+      "content": "MULTI-PARAGRAPH ANALYTICAL CONTENT (800-1200 words):
+
+      Start with RATIONALE (why this matters for the sector), then THEORETICAL FOUNDATIONS (name specific frameworks/models with academic citations), then PRACTICAL APPLICATIONS (subsector-specific examples), then INTEGRATION (how this contributes to portfolio diversification), ending with a PRACTICAL EXERCISE or scenario.
+
+      Use named frameworks (e.g., 'Cynefin', 'MAUT', 'LCA'), cite authors (e.g., 'Rasmussen', 'Kahneman & Tversky'), provide subsector breakdowns (construction/manufacturing/etc.), explain trade-offs and limitations, not just benefits.",
+      "learningObjectives": ["specific measurable objective 1", "specific measurable objective 2"],
+      "skillTags": ["specific skill1", "specific skill2", "specific skill3"],
+      "paperReferences": ["Specific paper or 'Author, YEAR'", "Another reference"],
+      "estimatedMinutes": 90-120
     },
-    { "unitNumber": 2, ... },
-    { "unitNumber": 3, ... }
+    { "unitNumber": 2, ... (same depth pattern) },
+    { "unitNumber": 3, ... (same depth pattern) }
   ]
 }
 
@@ -248,8 +304,8 @@ ${docs}`;
 
   const reportsSection = reportTexts.length > 0
     ? `\n\nSECTOR REPORTS (full text — read carefully for context):\n${reportTexts
-        .map((text, i) => `--- Report ${i + 1} ---\n${text}`)
-        .join("\n\n")}`
+      .map((text, i) => `--- Report ${i + 1} ---\n${text}`)
+      .join("\n\n")}`
     : "";
 
   const topicNumbers = topics
@@ -265,13 +321,25 @@ ${reportsSection}
 Return a JSON object with this EXACT structure:
 {
   "sectorName": "Name of the economic sector (inferred from topics and reports)",
-  "sectorDescription": "Comprehensive description of this sector's landscape, key challenges, skill gaps, and future outlook (300-500 words)",
+  "sectorDescription": "COMPREHENSIVE SECTOR ANALYSIS (500-800 words):
+
+  Paragraph 1: Current state of the sector, major industries/subsectors, economic significance.
+
+  Paragraph 2: Key technological trends, recent innovations, digital transformation drivers (reference specific topics/papers).
+
+  Paragraph 3: Critical skill gaps, workforce challenges, emerging competency requirements.
+
+  Paragraph 4: Future outlook, strategic priorities, role of diversified skill development in addressing sector needs.
+
+  Use specific evidence from the topics and papers. Reference concrete trends, technologies, and challenges visible in the data.",
   "affinityMatrix": {
 ${topicNumbers.map((n) => `    "${n}": [new_tech, trends, sales, negotiation_hr, growth_theory, growth_practical]`).join(",\n")}
   },
-  "programTitle": "Proposed title for the educational program",
-  "programDescription": "Brief program description (100-200 words)",
-  "targetAudience": "Recommended target audience for this program",
+  "programTitle": "Proposed title for the educational program (specific to the sector, professional)",
+  "programDescription": "PROGRAM DESCRIPTION (250-400 words):
+
+  Explain the program's purpose using the diversified portfolio framework — how it builds a balanced, complementary skill set rather than narrow specialization. Address the sector's challenges and how this diversified approach creates resilient, adaptable professionals. Reference the concept of portfolio theory applied to skills (reducing career risk through diversification).",
+  "targetAudience": "Recommended target audience — be specific about roles, experience levels, and career stages (e.g., 'mid-career professionals in manufacturing seeking to broaden competencies' or 'recent graduates entering construction management')",
   "educationLevel": "bachelor"
 }
 

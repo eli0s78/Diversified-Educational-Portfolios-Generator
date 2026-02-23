@@ -1,9 +1,34 @@
 import { NextResponse } from "next/server";
-import { getSupervisorsForDirections } from "@/lib/db/queries";
+import {
+  getSupervisorsForDirections,
+  matchSupervisorsToCoursesContentBased,
+} from "@/lib/db/queries";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+
+    // Content-based matching when courses are provided
+    if (body.courses && Array.isArray(body.courses)) {
+      const { courses, limit = 3 } = body as {
+        courses: Array<{
+          trainingDirection: string;
+          title: string;
+          overview: string;
+          modules: Array<{ title: string; description: string }>;
+        }>;
+        limit?: number;
+      };
+
+      const supervisors = matchSupervisorsToCoursesContentBased(
+        courses,
+        Math.min(limit, 10)
+      );
+
+      return NextResponse.json({ supervisors });
+    }
+
+    // Legacy direction-based matching
     const { directionKeys, limit = 3 } = body as {
       directionKeys: string[];
       limit?: number;
@@ -11,7 +36,7 @@ export async function POST(request: Request) {
 
     if (!directionKeys || !Array.isArray(directionKeys) || directionKeys.length === 0) {
       return NextResponse.json(
-        { error: "directionKeys array is required" },
+        { error: "directionKeys array or courses array is required" },
         { status: 400 }
       );
     }

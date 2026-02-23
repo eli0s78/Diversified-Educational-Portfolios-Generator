@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ImportResultDialog } from "@/components/ui/ImportResultDialog";
+import { PromptDialog } from "@/components/ui/PromptDialog";
 import { cn } from "@/lib/utils";
 
 export default function ProjectSwitcher() {
@@ -38,6 +39,7 @@ export default function ProjectSwitcher() {
   const [importResult, setImportResult] = useState<{ success: boolean; projectName?: string } | null>(null);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
+  const [showNewDialog, setShowNewDialog] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -62,8 +64,16 @@ export default function ProjectSwitcher() {
   );
 
   const handleNew = () => {
-    createProject();
     setOpen(false);
+    setShowNewDialog(true);
+  };
+
+  const handleNewConfirm = (name: string) => {
+    const project = createProject();
+    if (name.trim()) {
+      renameProject(project.id, name.trim());
+    }
+    setShowNewDialog(false);
     router.push("/upload");
   };
 
@@ -307,6 +317,19 @@ export default function ProjectSwitcher() {
           setDeleteId(null);
         }}
         onCancel={() => setDeleteId(null)}
+      />
+
+      {/* New project naming dialog */}
+      <PromptDialog
+        open={showNewDialog}
+        title={t("new_project_title")}
+        message={t("new_project_message")}
+        placeholder={t("new_project_placeholder")}
+        defaultValue=""
+        confirmLabel={t("create")}
+        cancelLabel={t("cancel")}
+        onConfirm={handleNewConfirm}
+        onCancel={() => setShowNewDialog(false)}
       />
     </div>
   );

@@ -16,15 +16,18 @@ import {
   GraduationCap,
   Users,
   Grid3X3,
+  Upload,
+  FolderOpen,
+  ArrowRight,
 } from "lucide-react";
-import { getCurrentProject } from "@/lib/project-manager";
 import { useProject } from "@/lib/project-context";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export default function AnalysisPage() {
   const t = useTranslations("analysis");
   const locale = useLocale();
   const router = useRouter();
-  const { currentProject: ctxProject } = useProject();
+  const { currentProject } = useProject();
 
   const [topics, setTopics] = useState<TopicInfo[]>([]);
   const [affinityMatrix, setAffinityMatrix] = useState<Record<number, number[]>>({});
@@ -37,30 +40,62 @@ export default function AnalysisPage() {
   const [stats, setStats] = useState<ReturnType<typeof getTopicStats> | null>(null);
 
   useEffect(() => {
-    const project = ctxProject ?? getCurrentProject();
-    if (!project?.sourceData || !project?.analysis) {
-      router.push("/upload");
+    if (!currentProject?.sourceData || !currentProject?.analysis) {
+      setStats(null);
       return;
     }
-    setTopics(project.sourceData.topics);
-    setAffinityMatrix(project.analysis.affinityMatrix);
-    setSectorName(project.analysis.sectorName);
-    setSectorDescription(project.analysis.sectorDescription);
-    setProgramTitle(project.analysis.programTitle);
-    setProgramDescription(project.analysis.programDescription);
-    setTargetAudience(project.analysis.targetAudience);
-    setStats(getTopicStats(project.sourceData.topics));
-  }, [router]);
+    setTopics(currentProject.sourceData.topics);
+    setAffinityMatrix(currentProject.analysis.affinityMatrix);
+    setSectorName(currentProject.analysis.sectorName);
+    setSectorDescription(currentProject.analysis.sectorDescription);
+    setProgramTitle(currentProject.analysis.programTitle);
+    setProgramDescription(currentProject.analysis.programDescription);
+    setTargetAudience(currentProject.analysis.targetAudience);
+    setStats(getTopicStats(currentProject.sourceData.topics));
+    setSelectedTopic(null);
+  }, [currentProject, router]);
 
   const activeTopics = topics.filter((t) => t.topicNumber !== -1);
   const maxCount = activeTopics.length > 0
     ? Math.max(...activeTopics.map((t) => t.count))
     : 1;
 
+  if (!currentProject) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <EmptyState
+          icon={FolderOpen}
+          title={t("no_project_title")}
+          message={t("no_project_message")}
+          action={
+            <button
+              onClick={() => router.push("/")}
+              className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-hover"
+            >
+              {t("go_home")}
+            </button>
+          }
+        />
+      </div>
+    );
+  }
+
   if (!stats) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        <EmptyState
+          icon={Upload}
+          title={t("no_data_title")}
+          message={t("no_data_message")}
+          action={
+            <button
+              onClick={() => router.push("/upload")}
+              className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-hover"
+            >
+              {t("go_upload")}
+            </button>
+          }
+        />
       </div>
     );
   }
@@ -258,6 +293,16 @@ export default function AnalysisPage() {
             </div>
           )}
         </div>
+      </div>
+
+      <div className="mt-12 flex justify-center">
+        <button
+          onClick={() => router.push("/portfolio")}
+          className="flex items-center gap-2 rounded-xl bg-primary px-8 py-4 text-lg font-semibold text-white transition-colors hover:bg-primary-hover shadow-lg shadow-primary/20"
+        >
+          {t("proceed_to_portfolio")}
+          <ArrowRight className="h-5 w-5" />
+        </button>
       </div>
     </div>
   );
