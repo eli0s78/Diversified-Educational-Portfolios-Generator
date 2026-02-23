@@ -35,11 +35,15 @@ import {
 } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import type { TopicInfo, Paper } from "@/lib/engine/portfolio-types";
+import { ResearchWizard } from "@/components/research/ResearchWizard";
+import type { AcademicPaper, TopicInfo as ResearchTopicInfo, SectorReport } from "@/lib/types/research";
 
 const PIPELINE_STEPS = [
   { key: "parse", icon: Table2 },
   { key: "analyze", icon: Sparkles },
 ] as const;
+
+type UploadTab = "upload" | "generate";
 
 export default function UploadPage() {
   const t = useTranslations("upload");
@@ -63,6 +67,9 @@ export default function UploadPage() {
   const setPapersFile = useCallback((file: File | null) => {
     setUploadFiles((prev) => ({ ...prev, papersFile: file }));
   }, [setUploadFiles]);
+
+  // Tab state
+  const [activeTab, setActiveTab] = useState<UploadTab>("upload");
 
   // Pipeline state
   const [pipelineStep, setPipelineStep] = useState(-1); // -1 = not started
@@ -280,11 +287,94 @@ export default function UploadPage() {
     );
   }
 
+  // Handle Research Wizard completion
+  const handleResearchComplete = useCallback((data: {
+    papers: AcademicPaper[];
+    topics: ResearchTopicInfo[];
+    report: SectorReport;
+  }) => {
+    if (!currentProject) return;
+
+    // Convert research data to app format
+    const convertedTopics: TopicInfo[] = data.topics.map(t => ({
+      topicNumber: t.topicNumber,
+      count: t.count,
+      name: t.name,
+      keywords: t.representation, // representation -> keywords
+      representativeDocs: t.representativeDocs,
+      rarityLabel: t.rarityLabel,
+    }));
+
+    const convertedPapers: Paper[] = data.papers.map(p => ({
+      id: p.id,
+      doi: p.doi || '',
+      title: p.title,
+      abstract: p.abstract,
+      year: p.year,
+      venue: p.venue || '',
+      authors: p.authors.join(', '),
+      url: p.url || '',
+      source: p.source,
+      fields: p.fields?.join(', '),
+      topicNumber: p.topicNumber ?? -1,
+      rarityLabel: p.rarityLabel ?? 'NO_TOPIC',
+    }));
+
+    // Update project with generated data
+    const updated = {
+      ...currentProject,
+      sourceData: {
+        reports: [{
+          name: data.report.sector_definition.name,
+          textContent: data.report.sector_definition.description,
+        }],
+        topics: convertedTopics,
+        papers: convertedPapers,
+        topicsFileName: 'generated-topics.csv',
+        papersFileName: 'generated-papers.csv',
+      },
+    };
+
+    saveProject(updated);
+    refreshCurrentProject();
+
+    // Switch to upload tab to show results
+    setActiveTab("upload");
+  }, [currentProject, refreshCurrentProject]);
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
       <h1 className="mb-2 text-3xl font-bold">{t("title")}</h1>
       <p className="mb-8 text-muted-foreground">{t("subtitle")}</p>
 
+      {/* Tab Switcher */}
+      <div className="mb-6 flex gap-1 rounded-lg border border-border bg-muted/30 p-1">
+        <button
+          onClick={() => setActiveTab("upload")}
+          className={cn(
+            "flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors",
+            activeTab === "upload"
+              ? "bg-card text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          {t("tab_upload")}
+        </button>
+        <button
+          onClick={() => setActiveTab("generate")}
+          className={cn(
+            "flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors",
+            activeTab === "generate"
+              ? "bg-card text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          {t("tab_generate")}
+        </button>
+      </div>
+
+      {/* Upload Tab Content */}
+      {activeTab === "upload" && (
       <div className="space-y-6">
         {/* Existing Data Summary */}
         {existingData && (
@@ -608,6 +698,18 @@ export default function UploadPage() {
           )}
         </button>
       </div>
+      )}
+
+      {/* Generate Tab Content */}
+      {activeTab === "generate" && (
+        <div className="space-y-6">
+          <div className="rounded-xl border border-border bg-card p-6">
+            <h2 className="mb-2 text-lg font-semibold">{t("generate_tab_title")}</h2>
+            <p className="mb-6 text-sm text-muted-foreground">{t("generate_tab_subtitle")}</p>
+            <ResearchWizard onComplete={handleResearchComplete} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
