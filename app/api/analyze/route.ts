@@ -5,6 +5,9 @@ import { buildAnalysisSchema } from "@/lib/ai/gemini-schemas";
 import type { TopicInfo, AnalysisResult } from "@/lib/engine/portfolio-types";
 import { TRAINING_DIRECTIONS } from "@/lib/engine/portfolio-types";
 
+// Allow execution for up to 5 minutes (300 seconds) on Vercel
+export const maxDuration = 300;
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
