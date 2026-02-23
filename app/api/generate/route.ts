@@ -7,8 +7,8 @@ import { TRAINING_DIRECTIONS, CourseOutlineSchema } from "@/lib/engine/portfolio
 import type { TopicInfo, Paper } from "@/lib/engine/portfolio-types";
 import { matchSupervisorsToCoursesContentBased } from "@/lib/db/queries";
 
-// Allow execution for up to 5 minutes (300 seconds) on Vercel
-export const maxDuration = 300;
+// Allow execution for up to 60 seconds (maximum for Vercel Hobby Free Tier)
+export const maxDuration = 60;
 
 export async function POST(request: Request) {
   try {
