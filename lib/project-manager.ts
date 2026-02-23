@@ -154,6 +154,8 @@ export function getSettings(): AppSettings {
     const geminiTier = raw.providers?.gemini?.verifiedTier ||
       raw.providers?.[raw.activeProvider]?.verifiedTier;
     const migrated: AppSettings = {
+      ...DEFAULT_SETTINGS,
+      ...raw,
       name: raw.name || "",
       apiKey: geminiKey,
       verifiedModel: geminiModel,
@@ -166,6 +168,8 @@ export function getSettings(): AppSettings {
   // Migrate from even older single-key format
   if ("aiProvider" in raw && !("providers" in raw)) {
     const migrated: AppSettings = {
+      ...DEFAULT_SETTINGS,
+      ...raw,
       name: raw.name || "",
       apiKey: raw.apiKey || "",
       verifiedModel: raw.verifiedModel,
@@ -175,11 +179,12 @@ export function getSettings(): AppSettings {
     return migrated;
   }
 
+  // Merge with defaults to ensure all fields are present
   return {
+    ...DEFAULT_SETTINGS,
+    ...raw,
     name: raw.name || "",
     apiKey: raw.apiKey || "",
-    verifiedModel: raw.verifiedModel,
-    verifiedTier: raw.verifiedTier,
   };
 }
 
