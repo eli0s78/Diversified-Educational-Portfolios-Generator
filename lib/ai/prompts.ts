@@ -57,10 +57,8 @@ IMPORTANT GUIDELINES FOR CONTENT DEPTH AND QUALITY:
    - Start with rationale and context (why this matters)
    - Progress to theoretical foundations (concepts, models, frameworks)
    - Include practical applications with concrete examples
-   - Address challenges, nuances, and real-world complexity
-
-4. SUBSECTOR SPECIFICITY:
-   - Break down applications by industry subsectors when relevant (e.g., construction vs. manufacturing vs. textiles vs. mining)
+   - Base all content STRICTLY on the real-world application of the provided Topics within their target sector.
+   - Break down applications by relevant industry subsectors or specializations when appropriate.
    - Provide sector-specific examples, not generic ones
    - Reference industry-specific standards, regulations, or practices
 
@@ -151,7 +149,7 @@ Generate a JSON object with this exact structure:
 
           Paragraph 2-3: THEORETICAL FOUNDATIONS — Specific named frameworks/models (e.g., 'Cynefin Framework', 'Rasmussen's SRK Model'), academic references (author-year), core concepts with nuanced explanations.
 
-          Paragraph 4-5: PRACTICAL APPLICATIONS — Subsector-specific examples (e.g., construction vs. manufacturing), concrete techniques/methodologies, real-world implementation challenges.
+          Paragraph 4-5: PRACTICAL APPLICATIONS — Subsector-specific or specialized examples, concrete techniques/methodologies, real-world implementation challenges based on the topics.
 
           Paragraph 6 (if applicable): INTEGRATION — How this connects to other units/modules, contribution to diversified skill portfolio, cross-cutting competencies.
 
@@ -230,7 +228,7 @@ Generate a JSON object with 3 units, each containing DEEP, ANALYTICAL content:
 
       Start with RATIONALE (why this matters for the sector), then THEORETICAL FOUNDATIONS (name specific frameworks/models with academic citations), then PRACTICAL APPLICATIONS (subsector-specific examples), then INTEGRATION (how this contributes to portfolio diversification), ending with a PRACTICAL EXERCISE or scenario.
 
-      Use named frameworks (e.g., 'Cynefin', 'MAUT', 'LCA'), cite authors (e.g., 'Rasmussen', 'Kahneman & Tversky'), provide subsector breakdowns (construction/manufacturing/etc.), explain trade-offs and limitations, not just benefits.",
+      Use named frameworks (e.g., 'Cynefin', 'MAUT', 'LCA'), cite relevant authors or standard methodologies, provide subsector paradigms, and explicitly explain trade-offs and limitations, not just benefits.",
       "learningObjectives": ["specific measurable objective 1", "specific measurable objective 2"],
       "skillTags": ["specific skill1", "specific skill2", "specific skill3"],
       "paperReferences": ["Specific paper or 'Author, YEAR'", "Another reference"],
@@ -339,7 +337,7 @@ ${topicNumbers.map((n) => `    "${n}": [new_tech, trends, sales, negotiation_hr,
   "programDescription": "PROGRAM DESCRIPTION (250-400 words):
 
   Explain the program's purpose using the diversified portfolio framework — how it builds a balanced, complementary skill set rather than narrow specialization. Address the sector's challenges and how this diversified approach creates resilient, adaptable professionals. Reference the concept of portfolio theory applied to skills (reducing career risk through diversification).",
-  "targetAudience": "Recommended target audience — be specific about roles, experience levels, and career stages (e.g., 'mid-career professionals in manufacturing seeking to broaden competencies' or 'recent graduates entering construction management')",
+  "targetAudience": "Recommended target audience — be specific about roles, experience levels, and career stages (e.g., 'mid-career professionals seeking to broaden competencies' or 'recent graduates entering management')",
   "educationLevel": "bachelor"
 }
 
