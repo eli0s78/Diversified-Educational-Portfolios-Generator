@@ -131,6 +131,14 @@ function writeJSON(key: string, value: unknown): void {
 const DEFAULT_SETTINGS: AppSettings = {
   name: "",
   apiKey: "",
+  // Research & Data Collection API Keys
+  semantic_scholar_api_key: undefined,
+  exa_api_key: undefined,
+  onet_api_key: undefined,
+  bls_api_key: undefined,
+  tavily_api_key: undefined,
+  firecrawl_api_key: undefined,
+  bertopic_service_url: undefined,
 };
 
 export function getSettings(): AppSettings {
