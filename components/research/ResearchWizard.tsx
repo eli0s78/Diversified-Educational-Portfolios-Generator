@@ -119,6 +119,13 @@ export function ResearchWizard({ onComplete }: ResearchWizardProps) {
         throw new Error("BERTopic service URL not configured. Please set it in Settings.");
       }
 
+      // Calculate adaptive min_topic_size based on number of papers
+      // Use 5% of papers, but at least 3 and at most 10
+      const paperCount = litData.papers.length;
+      const minTopicSize = Math.max(3, Math.min(10, Math.floor(paperCount * 0.05)));
+
+      console.log(`[Research Wizard] Using min_topic_size=${minTopicSize} for ${paperCount} papers`);
+
       const topicResponse = await fetch(`${bertopicUrl}/api/topic-modeling`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -128,7 +135,7 @@ export function ResearchWizard({ onComplete }: ResearchWizardProps) {
             title: p.title,
             abstract: p.abstract,
           })),
-          min_topic_size: 8,
+          min_topic_size: minTopicSize,
         }),
       });
 
