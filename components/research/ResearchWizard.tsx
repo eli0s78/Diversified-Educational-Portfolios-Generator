@@ -110,13 +110,16 @@ export function ResearchWizard({ onComplete }: ResearchWizardProps) {
       setCurrentStep("topic-modeling");
       console.log(`[Research Wizard] Topic modeling ${litData.papers.length} papers...`);
 
-      // Check if BERTopic service URL is configured
-      const settings = await fetch("/api/verify-bertopic").then((r) => r.json());
-      if (!settings.bertopic_service_url) {
+      // Check if BERTopic service URL is configured (read from localStorage client-side)
+      const settingsRaw = localStorage.getItem("dep-settings");
+      const settings = settingsRaw ? JSON.parse(settingsRaw) : {};
+      const bertopicUrl = settings.bertopic_service_url;
+
+      if (!bertopicUrl) {
         throw new Error("BERTopic service URL not configured. Please set it in Settings.");
       }
 
-      const topicResponse = await fetch(`${settings.bertopic_service_url}/api/topic-modeling`, {
+      const topicResponse = await fetch(`${bertopicUrl}/api/topic-modeling`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
