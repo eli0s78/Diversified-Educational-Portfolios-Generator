@@ -246,47 +246,6 @@ export default function UploadPage() {
     }
   }, [topicsFile, papersFile, pdfFiles, existingData, locale, router]);
 
-  const handlePdfDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    const files = Array.from(e.dataTransfer.files).filter(
-      (f) => f.type === "application/pdf"
-    );
-    setPdfFiles((prev) => [...prev, ...files]);
-  };
-
-  const handleCsvDrop = (
-    e: React.DragEvent,
-    setter: (f: File) => void
-  ) => {
-    e.preventDefault();
-    const file = Array.from(e.dataTransfer.files).find(
-      (f) => f.name.endsWith(".csv")
-    );
-    if (file) setter(file);
-  };
-
-  const pipelineComplete = pipelineStep === 2;
-
-  if (!currentProject) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <EmptyState
-          icon={FolderOpen}
-          title={t("no_project_title")}
-          message={t("no_project_message")}
-          action={
-            <button
-              onClick={() => router.push("/")}
-              className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-hover"
-            >
-              {t("go_home")}
-            </button>
-          }
-        />
-      </div>
-    );
-  }
-
   // Handle Research Wizard completion
   const handleResearchComplete = useCallback((data: {
     papers: AcademicPaper[];
@@ -341,6 +300,47 @@ export default function UploadPage() {
     // Switch to upload tab to show results
     setActiveTab("upload");
   }, [currentProject, refreshCurrentProject]);
+
+  const handlePdfDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const files = Array.from(e.dataTransfer.files).filter(
+      (f) => f.type === "application/pdf"
+    );
+    setPdfFiles((prev) => [...prev, ...files]);
+  };
+
+  const handleCsvDrop = (
+    e: React.DragEvent,
+    setter: (f: File) => void
+  ) => {
+    e.preventDefault();
+    const file = Array.from(e.dataTransfer.files).find(
+      (f) => f.name.endsWith(".csv")
+    );
+    if (file) setter(file);
+  };
+
+  const pipelineComplete = pipelineStep === 2;
+
+  if (!currentProject) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <EmptyState
+          icon={FolderOpen}
+          title={t("no_project_title")}
+          message={t("no_project_message")}
+          action={
+            <button
+              onClick={() => router.push("/")}
+              className="rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-hover"
+            >
+              {t("go_home")}
+            </button>
+          }
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
