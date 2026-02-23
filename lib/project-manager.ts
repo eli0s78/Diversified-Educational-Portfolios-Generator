@@ -10,6 +10,15 @@ export interface AppSettings {
   apiKey: string;
   verifiedModel?: string;
   verifiedTier?: "free" | "paid" | null;
+
+  // Research & Data Collection API Keys
+  semantic_scholar_api_key?: string;
+  exa_api_key?: string;
+  onet_api_key?: string;
+  bls_api_key?: string;
+  tavily_api_key?: string;
+  firecrawl_api_key?: string;
+  bertopic_service_url?: string;
 }
 
 export interface ProjectIndexEntry {

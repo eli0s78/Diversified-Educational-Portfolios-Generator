@@ -322,6 +322,128 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
+          {/* Research & Data Collection APIs */}
+          <Card>
+            <CardContent className="space-y-4">
+              <div>
+                <h3 className="text-sm font-semibold">{t("research_apis_title")}</h3>
+                <p className="mt-1 text-xs text-muted-foreground">{t("research_apis_hint")}</p>
+              </div>
+
+              {/* Semantic Scholar */}
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                  {t("semantic_scholar_key")}
+                </label>
+                <Input
+                  type="password"
+                  value={settings.semantic_scholar_api_key || ""}
+                  onChange={(e) =>
+                    setSettings((prev) => ({ ...prev, semantic_scholar_api_key: e.target.value }))
+                  }
+                  placeholder="Optional"
+                />
+                <p className="mt-1 text-xs text-muted-foreground">{t("semantic_scholar_hint")}</p>
+              </div>
+
+              {/* Exa */}
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                  {t("exa_key")}
+                </label>
+                <Input
+                  type="password"
+                  value={settings.exa_api_key || ""}
+                  onChange={(e) =>
+                    setSettings((prev) => ({ ...prev, exa_api_key: e.target.value }))
+                  }
+                  placeholder="Optional"
+                />
+                <p className="mt-1 text-xs text-muted-foreground">{t("exa_hint")}</p>
+              </div>
+
+              {/* O*NET */}
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                  {t("onet_key")}
+                </label>
+                <Input
+                  type="password"
+                  value={settings.onet_api_key || ""}
+                  onChange={(e) =>
+                    setSettings((prev) => ({ ...prev, onet_api_key: e.target.value }))
+                  }
+                  placeholder="Optional"
+                />
+                <p className="mt-1 text-xs text-muted-foreground">{t("onet_hint")}</p>
+              </div>
+
+              {/* BLS */}
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                  {t("bls_key")}
+                </label>
+                <Input
+                  type="password"
+                  value={settings.bls_api_key || ""}
+                  onChange={(e) =>
+                    setSettings((prev) => ({ ...prev, bls_api_key: e.target.value }))
+                  }
+                  placeholder="Optional"
+                />
+                <p className="mt-1 text-xs text-muted-foreground">{t("bls_hint")}</p>
+              </div>
+
+              {/* Tavily */}
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                  {t("tavily_key")}
+                </label>
+                <Input
+                  type="password"
+                  value={settings.tavily_api_key || ""}
+                  onChange={(e) =>
+                    setSettings((prev) => ({ ...prev, tavily_api_key: e.target.value }))
+                  }
+                  placeholder="Optional"
+                />
+                <p className="mt-1 text-xs text-muted-foreground">{t("tavily_hint")}</p>
+              </div>
+
+              {/* Firecrawl */}
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                  {t("firecrawl_key")}
+                </label>
+                <Input
+                  type="password"
+                  value={settings.firecrawl_api_key || ""}
+                  onChange={(e) =>
+                    setSettings((prev) => ({ ...prev, firecrawl_api_key: e.target.value }))
+                  }
+                  placeholder="Optional"
+                />
+                <p className="mt-1 text-xs text-muted-foreground">{t("firecrawl_hint")}</p>
+              </div>
+
+              {/* BERTopic Service URL */}
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                  {t("bertopic_url")}
+                </label>
+                <Input
+                  type="text"
+                  value={settings.bertopic_service_url || ""}
+                  onChange={(e) =>
+                    setSettings((prev) => ({ ...prev, bertopic_service_url: e.target.value }))
+                  }
+                  placeholder="https://your-bertopic-service.railway.app"
+                />
+                <p className="mt-1 text-xs text-muted-foreground">{t("bertopic_url_hint")}</p>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Done / Cancel */}
           <div className="flex gap-3">
             <Button
