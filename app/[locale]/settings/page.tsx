@@ -21,6 +21,8 @@ import {
   Sun,
   Moon,
   Monitor,
+  CheckCircle2,
+  Search,
 } from "lucide-react";
 import {
   getSettings,
@@ -81,11 +83,111 @@ export default function SettingsPage() {
   const [verifying, setVerifying] = useState(false);
   const [verifyError, setVerifyError] = useState<string | null>(null);
 
+  // Gemini active model state
+  const [activeGeminiModel, setActiveGeminiModel] = useState<string | null>(null);
+  const [geminiStatusError, setGeminiStatusError] = useState<string | null>(null);
+  const [geminiStatusLoading, setGeminiStatusLoading] = useState(true);
+
+  // API Key validation state
+  type ServiceValidationState = {
+    validating: boolean;
+    valid: boolean | null;
+    message: string | null;
+  };
+  const [validationState, setValidationState] = useState<
+    Record<string, ServiceValidationState>
+  >({});
+
   // Load settings on mount
   useEffect(() => {
     const s = getSettings();
     setSettings(s);
     setTheme(getStoredTheme());
+
+    // Initialize validation state from persisted settings
+    const initialValidationState: Record<string, ServiceValidationState> = {};
+    if (s.semantic_scholar_validated) {
+      initialValidationState.semantic_scholar = {
+        validating: false,
+        valid: true,
+        message: null,
+      };
+    }
+    if (s.onet_validated) {
+      initialValidationState.onet = {
+        validating: false,
+        valid: true,
+        message: null,
+      };
+    }
+    if (s.bls_validated) {
+      initialValidationState.bls = {
+        validating: false,
+        valid: true,
+        message: null,
+      };
+    }
+    if (s.tavily_validated) {
+      initialValidationState.tavily = {
+        validating: false,
+        valid: true,
+        message: null,
+      };
+    }
+    if (s.firecrawl_validated) {
+      initialValidationState.firecrawl = {
+        validating: false,
+        valid: true,
+        message: null,
+      };
+    }
+    if (s.fred_validated) {
+      initialValidationState.fred = {
+        validating: false,
+        valid: true,
+        message: null,
+      };
+    }
+    if (s.core_validated) {
+      initialValidationState.core = {
+        validating: false,
+        valid: true,
+        message: null,
+      };
+    }
+    if (s.google_books_validated) {
+      initialValidationState.google_books = {
+        validating: false,
+        valid: true,
+        message: null,
+      };
+    }
+    if (s.exa_validated) {
+      initialValidationState.exa = {
+        validating: false,
+        valid: true,
+        message: null,
+      };
+    }
+    setValidationState(initialValidationState);
+
+    // Fetch Gemini active model status
+    fetch("/api/gemini-status")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.valid) {
+          setActiveGeminiModel(data.model);
+        } else {
+          setGeminiStatusError(data.error || "Failed to resolve Gemini model");
+        }
+      })
+      .catch((err) => {
+        setGeminiStatusError("Could not connect to Gemini status API.");
+      })
+      .finally(() => {
+        setGeminiStatusLoading(false);
+      });
+
     setLoaded(true);
   }, []);
 
@@ -94,6 +196,68 @@ export default function SettingsPage() {
     if (!loaded) return;
     saveSettings(settings);
   }, [settings, loaded]);
+
+  // Validate API key for a service
+  const validateApiKey = async (
+    service: "onet" | "semantic_scholar" | "tavily" | "firecrawl" | "bertopic" | "bls" | "fred" | "exa" | "core" | "google_books",
+    apiKey?: string,
+    serviceUrl?: string
+  ) => {
+    setValidationState((prev) => ({
+      ...prev,
+      [service]: { validating: true, valid: null, message: null },
+    }));
+
+    try {
+      const response = await fetch("/api/validate-api-key", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ service, apiKey, serviceUrl }),
+      });
+
+      const data = await response.json();
+
+      setValidationState((prev) => ({
+        ...prev,
+        [service]: {
+          validating: false,
+          valid: data.valid,
+          message: data.message,
+        },
+      }));
+
+      // Persist validation state to settings
+      if (data.valid) {
+        setSettings((prev) => ({
+          ...prev,
+          [`${service}_validated`]: true,
+        }));
+
+        // Auto-hide success MESSAGE after 5 seconds (but keep valid flag)
+        setTimeout(() => {
+          setValidationState((prev) => ({
+            ...prev,
+            [service]: { ...prev[service], message: null },
+          }));
+        }, 5000);
+      } else {
+        // Clear validation flag if validation failed
+        setSettings((prev) => ({
+          ...prev,
+          [`${service}_validated`]: false,
+        }));
+      }
+    } catch (error) {
+      setValidationState((prev) => ({
+        ...prev,
+        [service]: {
+          validating: false,
+          valid: false,
+          message: `Connection failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+        },
+      }));
+    }
+  };
 
   const updateApiKey = (value: string) => {
     setSettings((prev) => ({
@@ -220,102 +384,62 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          {/* Gemini API Key */}
+          {/* Gemini AI - Server-Side Configured */}
           <Card>
             <CardContent className="space-y-3">
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-semibold">{t("gemini_api_key")}</h3>
-                {isVerified && (
-                  <Badge variant="success">{t("verified")}</Badge>
+                <h3 className="text-sm font-semibold">Gemini AI</h3>
+                {!geminiStatusLoading && activeGeminiModel && (
+                  <Badge variant="success">
+                    <ShieldCheck className="mr-1 h-3 w-3" />
+                    3.1+ Verified
+                  </Badge>
+                )}
+                {!geminiStatusLoading && geminiStatusError && (
+                  <Badge variant="destructive">
+                    <AlertTriangle className="mr-1 h-3 w-3" />
+                    Validation Failed
+                  </Badge>
+                )}
+                {geminiStatusLoading && (
+                  <Badge variant="muted">
+                    <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                    Checking...
+                  </Badge>
                 )}
               </div>
 
-              {/* API Key input */}
-              <div className="relative">
-                <Input
-                  type={showApiKey ? "text" : "password"}
-                  value={settings.apiKey}
-                  onChange={(e) => updateApiKey(e.target.value)}
-                  placeholder="AIzaSy..."
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowApiKey(!showApiKey)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted-foreground transition-colors hover:text-foreground"
-                  tabIndex={-1}
-                >
-                  {showApiKey ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-
-              {/* Key format warning */}
-              {keyMismatch && (
-                <div className="flex items-start gap-2 rounded-lg bg-accent/10 px-3 py-2 text-xs text-accent">
-                  <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                  <span>{keyMismatch}</span>
-                </div>
-              )}
-
-              {/* Verify button */}
-              {hasKey && !isVerified && (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={handleVerify}
-                  disabled={verifying}
-                >
-                  {verifying ? (
-                    <>
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      {t("verifying")}
-                    </>
-                  ) : (
-                    t("verify")
-                  )}
-                </Button>
-              )}
-
-              {/* Verified model display */}
-              {isVerified && (
-                <div className="rounded-lg border border-success/30 bg-success/5 px-3 py-2">
-                  <div className="flex items-center gap-2 text-xs">
-                    <ShieldCheck className="h-3.5 w-3.5 text-success" />
-                    <span className="font-medium text-success">
-                      {t("active_model")}:
-                    </span>
-                    <code className="rounded bg-success/10 px-1.5 py-0.5 font-mono text-[11px] font-bold text-success">
-                      {settings.verifiedModel}
-                    </code>
-                    {settings.verifiedTier && (
-                      <span
-                        className={cn(
-                          "rounded-md px-1.5 py-0.5 text-[10px] font-medium",
-                          settings.verifiedTier === "paid"
-                            ? "bg-success/20 text-success"
-                            : "bg-accent/10 text-accent"
-                        )}
-                      >
-                        {t(`tier_${settings.verifiedTier}`)}
-                      </span>
-                    )}
+              {geminiStatusLoading ? (
+                <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
+                  <div className="flex items-start gap-2 text-xs text-muted-foreground">
+                    <Loader2 className="mt-0.5 h-4 w-4 shrink-0 animate-spin" />
+                    <div>
+                      <p className="font-medium">Checking active Gemini model...</p>
+                    </div>
                   </div>
-                  <p className="mt-1 text-[11px] text-muted-foreground">
-                    {t("key_validated")}
-                  </p>
                 </div>
-              )}
-
-              {/* Verify error */}
-              {verifyError && (
-                <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2">
+              ) : activeGeminiModel ? (
+                <div className="rounded-lg border border-success/30 bg-success/5 px-3 py-2.5">
+                  <div className="flex items-start gap-2 text-xs text-success">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+                    <div>
+                      <p className="font-medium">Active Model: {activeGeminiModel}</p>
+                      <p className="mt-1 text-[11px] opacity-80">
+                        The Gemini API key is securely configured and a compatible Gemini 3.1+ model was found.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2.5">
                   <div className="flex items-start gap-2 text-xs text-destructive">
-                    <XCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                    <span>{verifyError}</span>
+                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                    <div>
+                      <p className="font-medium">Model Resolution Error</p>
+                      <p className="mt-1 text-[11px] opacity-80">
+                        {geminiStatusError || "Failed to find a compatible Gemini 3.1+ model. Check your server API key and billing status."}
+                      </p>
+                    </div>
                   </div>
                 </div>
               )}
@@ -335,14 +459,49 @@ export default function SettingsPage() {
                 <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
                   {t("semantic_scholar_key")}
                 </label>
-                <Input
-                  type="password"
-                  value={settings.semantic_scholar_api_key || ""}
-                  onChange={(e) =>
-                    setSettings((prev) => ({ ...prev, semantic_scholar_api_key: e.target.value }))
-                  }
-                  placeholder="Optional"
-                />
+                <div className="flex gap-2">
+                  <Input
+                    type="password"
+                    value={settings.semantic_scholar_api_key || ""}
+                    onChange={(e) =>
+                      setSettings((prev) => ({ ...prev, semantic_scholar_api_key: e.target.value }))
+                    }
+                    placeholder="Optional"
+                    className="flex-1"
+                  />
+                  <Button
+                    variant={validationState.semantic_scholar?.valid ? "success" : "secondary"}
+                    size="sm"
+                    onClick={() => validateApiKey("semantic_scholar", settings.semantic_scholar_api_key)}
+                    disabled={validationState.semantic_scholar?.validating}
+                  >
+                    {validationState.semantic_scholar?.validating ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : validationState.semantic_scholar?.valid ? (
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                    ) : (
+                      <ShieldCheck className="h-3.5 w-3.5" />
+                    )}
+                    {validationState.semantic_scholar?.valid ? "✓ Validated" : "Validate"}
+                  </Button>
+                </div>
+                {validationState.semantic_scholar?.message && (
+                  <div
+                    className={cn(
+                      "mt-2 flex items-start gap-2 rounded-md px-2 py-1.5 text-xs",
+                      validationState.semantic_scholar.valid
+                        ? "bg-success/10 text-success"
+                        : "bg-destructive/10 text-destructive"
+                    )}
+                  >
+                    {validationState.semantic_scholar.valid ? (
+                      <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    ) : (
+                      <XCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    )}
+                    <span>{validationState.semantic_scholar.message}</span>
+                  </div>
+                )}
                 <p className="mt-1 text-xs text-muted-foreground">{t("semantic_scholar_hint")}</p>
               </div>
 
@@ -351,14 +510,49 @@ export default function SettingsPage() {
                 <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
                   {t("exa_key")}
                 </label>
-                <Input
-                  type="password"
-                  value={settings.exa_api_key || ""}
-                  onChange={(e) =>
-                    setSettings((prev) => ({ ...prev, exa_api_key: e.target.value }))
-                  }
-                  placeholder="Optional"
-                />
+                <div className="flex gap-2">
+                  <Input
+                    type="password"
+                    value={settings.exa_api_key || ""}
+                    onChange={(e) =>
+                      setSettings((prev) => ({ ...prev, exa_api_key: e.target.value }))
+                    }
+                    placeholder="Optional"
+                    className="flex-1"
+                  />
+                  <Button
+                    variant={validationState.exa?.valid ? "success" : "secondary"}
+                    size="sm"
+                    onClick={() => validateApiKey("exa", settings.exa_api_key)}
+                    disabled={!settings.exa_api_key || validationState.exa?.validating}
+                  >
+                    {validationState.exa?.validating ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : validationState.exa?.valid ? (
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                    ) : (
+                      <ShieldCheck className="h-3.5 w-3.5" />
+                    )}
+                    {validationState.exa?.valid ? "✓ Validated" : "Validate"}
+                  </Button>
+                </div>
+                {validationState.exa?.message && (
+                  <div
+                    className={cn(
+                      "mt-2 flex items-start gap-2 rounded-md px-2 py-1.5 text-xs",
+                      validationState.exa.valid
+                        ? "bg-success/10 text-success"
+                        : "bg-destructive/10 text-destructive"
+                    )}
+                  >
+                    {validationState.exa.valid ? (
+                      <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    ) : (
+                      <XCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    )}
+                    <span>{validationState.exa.message}</span>
+                  </div>
+                )}
                 <p className="mt-1 text-xs text-muted-foreground">{t("exa_hint")}</p>
               </div>
 
@@ -367,14 +561,49 @@ export default function SettingsPage() {
                 <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
                   {t("onet_key")}
                 </label>
-                <Input
-                  type="password"
-                  value={settings.onet_api_key || ""}
-                  onChange={(e) =>
-                    setSettings((prev) => ({ ...prev, onet_api_key: e.target.value }))
-                  }
-                  placeholder="Optional"
-                />
+                <div className="flex gap-2">
+                  <Input
+                    type="password"
+                    value={settings.onet_api_key || ""}
+                    onChange={(e) =>
+                      setSettings((prev) => ({ ...prev, onet_api_key: e.target.value }))
+                    }
+                    placeholder="Optional"
+                    className="flex-1"
+                  />
+                  <Button
+                    variant={validationState.onet?.valid ? "success" : "secondary"}
+                    size="sm"
+                    onClick={() => validateApiKey("onet", settings.onet_api_key)}
+                    disabled={!settings.onet_api_key || validationState.onet?.validating}
+                  >
+                    {validationState.onet?.validating ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : validationState.onet?.valid ? (
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                    ) : (
+                      <ShieldCheck className="h-3.5 w-3.5" />
+                    )}
+                    {validationState.onet?.valid ? "✓ Validated" : "Validate"}
+                  </Button>
+                </div>
+                {validationState.onet?.message && (
+                  <div
+                    className={cn(
+                      "mt-2 flex items-start gap-2 rounded-md px-2 py-1.5 text-xs",
+                      validationState.onet.valid
+                        ? "bg-success/10 text-success"
+                        : "bg-destructive/10 text-destructive"
+                    )}
+                  >
+                    {validationState.onet.valid ? (
+                      <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    ) : (
+                      <XCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    )}
+                    <span>{validationState.onet.message}</span>
+                  </div>
+                )}
                 <p className="mt-1 text-xs text-muted-foreground">{t("onet_hint")}</p>
               </div>
 
@@ -383,15 +612,101 @@ export default function SettingsPage() {
                 <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
                   {t("bls_key")}
                 </label>
-                <Input
-                  type="password"
-                  value={settings.bls_api_key || ""}
-                  onChange={(e) =>
-                    setSettings((prev) => ({ ...prev, bls_api_key: e.target.value }))
-                  }
-                  placeholder="Optional"
-                />
+                <div className="flex gap-2">
+                  <Input
+                    type="password"
+                    value={settings.bls_api_key || ""}
+                    onChange={(e) =>
+                      setSettings((prev) => ({ ...prev, bls_api_key: e.target.value }))
+                    }
+                    placeholder="Optional"
+                    className="flex-1"
+                  />
+                  <Button
+                    variant={validationState.bls?.valid ? "success" : "secondary"}
+                    size="sm"
+                    onClick={() => validateApiKey("bls", settings.bls_api_key)}
+                    disabled={!settings.bls_api_key || validationState.bls?.validating}
+                  >
+                    {validationState.bls?.validating ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : validationState.bls?.valid ? (
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                    ) : (
+                      <ShieldCheck className="h-3.5 w-3.5" />
+                    )}
+                    {validationState.bls?.valid ? "✓ Validated" : "Validate"}
+                  </Button>
+                </div>
+                {validationState.bls?.message && (
+                  <div
+                    className={cn(
+                      "mt-2 flex items-start gap-2 rounded-md px-2 py-1.5 text-xs",
+                      validationState.bls.valid
+                        ? "bg-success/10 text-success"
+                        : "bg-destructive/10 text-destructive"
+                    )}
+                  >
+                    {validationState.bls.valid ? (
+                      <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    ) : (
+                      <XCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    )}
+                    <span>{validationState.bls.message}</span>
+                  </div>
+                )}
                 <p className="mt-1 text-xs text-muted-foreground">{t("bls_hint")}</p>
+              </div>
+
+              {/* Google Books */}
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                  {t("google_books_key")}
+                </label>
+                <div className="flex gap-2">
+                  <Input
+                    type="password"
+                    value={settings.google_books_api_key || ""}
+                    onChange={(e) =>
+                      setSettings((prev) => ({ ...prev, google_books_api_key: e.target.value }))
+                    }
+                    placeholder="Optional"
+                    className="flex-1"
+                  />
+                  <Button
+                    variant={validationState.google_books?.valid ? "success" : "secondary"}
+                    size="sm"
+                    onClick={() => validateApiKey("google_books", settings.google_books_api_key)}
+                    disabled={!settings.google_books_api_key || validationState.google_books?.validating}
+                  >
+                    {validationState.google_books?.validating ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : validationState.google_books?.valid ? (
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                    ) : (
+                      <ShieldCheck className="h-3.5 w-3.5" />
+                    )}
+                    {validationState.google_books?.valid ? "✓ Validated" : "Validate"}
+                  </Button>
+                </div>
+                {validationState.google_books?.message && (
+                  <div
+                    className={cn(
+                      "mt-2 flex items-start gap-2 rounded-md px-2 py-1.5 text-xs",
+                      validationState.google_books.valid
+                        ? "bg-success/10 text-success"
+                        : "bg-destructive/10 text-destructive"
+                    )}
+                  >
+                    {validationState.google_books.valid ? (
+                      <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    ) : (
+                      <XCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    )}
+                    <span>{validationState.google_books.message}</span>
+                  </div>
+                )}
+                <p className="mt-1 text-xs text-muted-foreground">{t("google_books_hint")}</p>
               </div>
 
               {/* Tavily */}
@@ -399,14 +714,49 @@ export default function SettingsPage() {
                 <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
                   {t("tavily_key")}
                 </label>
-                <Input
-                  type="password"
-                  value={settings.tavily_api_key || ""}
-                  onChange={(e) =>
-                    setSettings((prev) => ({ ...prev, tavily_api_key: e.target.value }))
-                  }
-                  placeholder="Optional"
-                />
+                <div className="flex gap-2">
+                  <Input
+                    type="password"
+                    value={settings.tavily_api_key || ""}
+                    onChange={(e) =>
+                      setSettings((prev) => ({ ...prev, tavily_api_key: e.target.value }))
+                    }
+                    placeholder="Optional"
+                    className="flex-1"
+                  />
+                  <Button
+                    variant={validationState.tavily?.valid ? "success" : "secondary"}
+                    size="sm"
+                    onClick={() => validateApiKey("tavily", settings.tavily_api_key)}
+                    disabled={!settings.tavily_api_key || validationState.tavily?.validating}
+                  >
+                    {validationState.tavily?.validating ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : validationState.tavily?.valid ? (
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                    ) : (
+                      <ShieldCheck className="h-3.5 w-3.5" />
+                    )}
+                    {validationState.tavily?.valid ? "✓ Validated" : "Validate"}
+                  </Button>
+                </div>
+                {validationState.tavily?.message && (
+                  <div
+                    className={cn(
+                      "mt-2 flex items-start gap-2 rounded-md px-2 py-1.5 text-xs",
+                      validationState.tavily.valid
+                        ? "bg-success/10 text-success"
+                        : "bg-destructive/10 text-destructive"
+                    )}
+                  >
+                    {validationState.tavily.valid ? (
+                      <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    ) : (
+                      <XCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    )}
+                    <span>{validationState.tavily.message}</span>
+                  </div>
+                )}
                 <p className="mt-1 text-xs text-muted-foreground">{t("tavily_hint")}</p>
               </div>
 
@@ -415,32 +765,155 @@ export default function SettingsPage() {
                 <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
                   {t("firecrawl_key")}
                 </label>
-                <Input
-                  type="password"
-                  value={settings.firecrawl_api_key || ""}
-                  onChange={(e) =>
-                    setSettings((prev) => ({ ...prev, firecrawl_api_key: e.target.value }))
-                  }
-                  placeholder="Optional"
-                />
+                <div className="flex gap-2">
+                  <Input
+                    type="password"
+                    value={settings.firecrawl_api_key || ""}
+                    onChange={(e) =>
+                      setSettings((prev) => ({ ...prev, firecrawl_api_key: e.target.value }))
+                    }
+                    placeholder="Optional"
+                    className="flex-1"
+                  />
+                  <Button
+                    variant={validationState.firecrawl?.valid ? "success" : "secondary"}
+                    size="sm"
+                    onClick={() => validateApiKey("firecrawl", settings.firecrawl_api_key)}
+                    disabled={!settings.firecrawl_api_key || validationState.firecrawl?.validating}
+                  >
+                    {validationState.firecrawl?.validating ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : validationState.firecrawl?.valid ? (
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                    ) : (
+                      <ShieldCheck className="h-3.5 w-3.5" />
+                    )}
+                    {validationState.firecrawl?.valid ? "✓ Validated" : "Validate"}
+                  </Button>
+                </div>
+                {validationState.firecrawl?.message && (
+                  <div
+                    className={cn(
+                      "mt-2 flex items-start gap-2 rounded-md px-2 py-1.5 text-xs",
+                      validationState.firecrawl.valid
+                        ? "bg-success/10 text-success"
+                        : "bg-destructive/10 text-destructive"
+                    )}
+                  >
+                    {validationState.firecrawl.valid ? (
+                      <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    ) : (
+                      <XCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    )}
+                    <span>{validationState.firecrawl.message}</span>
+                  </div>
+                )}
                 <p className="mt-1 text-xs text-muted-foreground">{t("firecrawl_hint")}</p>
               </div>
 
-              {/* BERTopic Service URL */}
+              {/* FRED */}
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                  {t("bertopic_url")}
+                  FRED API Key (Federal Reserve Economic Data)
                 </label>
-                <Input
-                  type="text"
-                  value={settings.bertopic_service_url || ""}
-                  onChange={(e) =>
-                    setSettings((prev) => ({ ...prev, bertopic_service_url: e.target.value }))
-                  }
-                  placeholder="https://your-bertopic-service.railway.app"
-                />
-                <p className="mt-1 text-xs text-muted-foreground">{t("bertopic_url_hint")}</p>
+                <div className="flex gap-2">
+                  <Input
+                    type="password"
+                    value={settings.fred_api_key || ""}
+                    onChange={(e) =>
+                      setSettings((prev) => ({ ...prev, fred_api_key: e.target.value }))
+                    }
+                    placeholder="Optional"
+                    className="flex-1"
+                  />
+                  <Button
+                    variant={validationState.fred?.valid ? "success" : "secondary"}
+                    size="sm"
+                    onClick={() => validateApiKey("fred", settings.fred_api_key)}
+                    disabled={!settings.fred_api_key || validationState.fred?.validating}
+                  >
+                    {validationState.fred?.validating ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : validationState.fred?.valid ? (
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                    ) : (
+                      <ShieldCheck className="h-3.5 w-3.5" />
+                    )}
+                    {validationState.fred?.valid ? "✓ Validated" : "Validate"}
+                  </Button>
+                </div>
+                {validationState.fred?.message && (
+                  <div
+                    className={cn(
+                      "mt-2 flex items-start gap-2 rounded-md px-2 py-1.5 text-xs",
+                      validationState.fred.valid
+                        ? "bg-success/10 text-success"
+                        : "bg-destructive/10 text-destructive"
+                    )}
+                  >
+                    {validationState.fred.valid ? (
+                      <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    ) : (
+                      <XCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    )}
+                    <span>{validationState.fred.message}</span>
+                  </div>
+                )}
+                <p className="mt-1 text-xs text-muted-foreground">Used for economic/finance sector trends. Free key available at fred.stlouisfed.org</p>
               </div>
+
+              {/* CORE */}
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                  {t("core_key")}
+                </label>
+                <div className="flex gap-2">
+                  <Input
+                    type="password"
+                    value={settings.core_api_key || ""}
+                    onChange={(e) =>
+                      setSettings((prev) => ({ ...prev, core_api_key: e.target.value }))
+                    }
+                    placeholder="Optional"
+                    className="flex-1"
+                  />
+                  <Button
+                    variant={validationState.core?.valid ? "success" : "secondary"}
+                    size="sm"
+                    onClick={() => validateApiKey("core", settings.core_api_key)}
+                    disabled={!settings.core_api_key || validationState.core?.validating}
+                  >
+                    {validationState.core?.validating ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : validationState.core?.valid ? (
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                    ) : (
+                      <ShieldCheck className="h-3.5 w-3.5" />
+                    )}
+                    {validationState.core?.valid ? "✓ Validated" : "Validate"}
+                  </Button>
+                </div>
+                {validationState.core?.message && (
+                  <div
+                    className={cn(
+                      "mt-2 flex items-start gap-2 rounded-md px-2 py-1.5 text-xs",
+                      validationState.core.valid
+                        ? "bg-success/10 text-success"
+                        : "bg-destructive/10 text-destructive"
+                    )}
+                  >
+                    {validationState.core.valid ? (
+                      <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    ) : (
+                      <XCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    )}
+                    <span>{validationState.core.message}</span>
+                  </div>
+                )}
+                <p className="mt-1 text-xs text-muted-foreground">{t("core_hint")}</p>
+              </div>
+
+
             </CardContent>
           </Card>
 
@@ -561,6 +1034,30 @@ export default function SettingsPage() {
                     DOI: {t("reference_doi")}
                     <ExternalLink className="h-3 w-3" />
                   </a>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Research Engines */}
+          <Card>
+            <CardContent>
+              <div className="mb-3 flex items-center gap-2">
+                <Search className="h-4 w-4 text-primary" />
+                <h2 className="text-sm font-semibold">{t("research_engines")}</h2>
+              </div>
+              <p className="mb-4 text-xs text-muted-foreground leading-relaxed">
+                {t("research_engines_desc")}
+              </p>
+
+              <div className="space-y-4 rounded-lg bg-muted/30 p-4 border border-border">
+                <div>
+                  <h3 className="text-xs font-semibold text-foreground">{t("research_search")}</h3>
+                  <p className="mt-1 text-xs text-muted-foreground">{t("research_search_desc")}</p>
+                </div>
+                <div>
+                  <h3 className="text-xs font-semibold text-foreground">{t("research_scrape")}</h3>
+                  <p className="mt-1 text-xs text-muted-foreground">{t("research_scrape_desc")}</p>
                 </div>
               </div>
             </CardContent>

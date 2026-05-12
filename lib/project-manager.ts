@@ -14,11 +14,25 @@ export interface AppSettings {
   // Research & Data Collection API Keys
   semantic_scholar_api_key?: string;
   exa_api_key?: string;
-  onet_api_key?: string;
-  bls_api_key?: string;
   tavily_api_key?: string;
   firecrawl_api_key?: string;
   bertopic_service_url?: string;
+  fred_api_key?: string;
+  core_api_key?: string;
+  onet_api_key?: string;
+  bls_api_key?: string;
+  google_books_api_key?: string;
+
+  // Validation States (used by UI to cache validation)
+  semantic_scholar_validated?: boolean;
+  exa_validated?: boolean;
+  tavily_validated?: boolean;
+  firecrawl_validated?: boolean;
+  fred_validated?: boolean;
+  core_validated?: boolean;
+  onet_validated?: boolean;
+  bls_validated?: boolean;
+  google_books_validated?: boolean;
 }
 
 export interface ProjectIndexEntry {
@@ -134,11 +148,14 @@ const DEFAULT_SETTINGS: AppSettings = {
   // Research & Data Collection API Keys
   semantic_scholar_api_key: undefined,
   exa_api_key: undefined,
-  onet_api_key: undefined,
-  bls_api_key: undefined,
   tavily_api_key: undefined,
   firecrawl_api_key: undefined,
   bertopic_service_url: undefined,
+  fred_api_key: undefined,
+  core_api_key: undefined,
+  onet_api_key: undefined,
+  bls_api_key: undefined,
+  google_books_api_key: undefined,
 };
 
 export function getSettings(): AppSettings {
