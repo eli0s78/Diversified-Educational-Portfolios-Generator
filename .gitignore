@@ -52,6 +52,14 @@ next-env.d.ts
 nul
 academics_specialties.txt
 skills_list.md
+debug_generation_error.log
+temp-*.mjs
+temp-*.js
+.antigravityignore
+
+# python virtualenvs (BERTopic service)
+.venv/
+venv/
 
 # database files
 **/*.db
