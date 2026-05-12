@@ -42,12 +42,12 @@ export async function searchTavily(
 ): Promise<TavilySearchResponse> {
   const {
     query,
-    search_depth = "basic",
+    search_depth = "advanced",
     max_results = 5,
     include_domains,
     exclude_domains,
     include_answer = false,
-    include_raw_content = false,
+    include_raw_content = true,
   } = params;
 
   const requestBody = {

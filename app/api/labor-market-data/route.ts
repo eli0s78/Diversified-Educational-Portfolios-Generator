@@ -25,6 +25,7 @@ import {
   getLatestEmploymentValue,
   getISCOMajorGroup,
 } from "@/lib/apis/eurostat";
+import { getOECDEducationData } from "@/lib/apis/oecd";
 import type {
   LaborMarketData,
   OccupationTaxonomy,
@@ -33,7 +34,6 @@ import type {
   WageData,
   AutomationRisk,
 } from "@/lib/types/research";
-import { getSettings } from "@/lib/project-manager";
 
 export const runtime = "nodejs";
 export const maxDuration = 300; // 5 minutes
@@ -41,12 +41,14 @@ export const maxDuration = 300; // 5 minutes
 interface LaborMarketRequest {
   occupation: string;
   region: "US" | "EU" | "Global";
+  onet_api_key?: string;
+  bls_api_key?: string;
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body: LaborMarketRequest = await request.json();
-    const { occupation, region = "Global" } = body;
+    const { occupation, region = "Global", onet_api_key, bls_api_key } = body;
 
     if (!occupation) {
       return NextResponse.json(
@@ -55,10 +57,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get API keys from settings
-    const settings = getSettings();
-    const onetApiKey = settings.onet_api_key;
-    const blsApiKey = settings.bls_api_key;
+    // Use API keys from request body (passed from client-side localStorage)
+    const onetApiKey = onet_api_key;
+    const blsApiKey = bls_api_key;
 
     // Initialize result structure
     let laborMarketData: Partial<LaborMarketData> = {
@@ -82,126 +83,118 @@ export async function POST(request: NextRequest) {
     // ============================================================
     if (region === "US" || region === "Global") {
       if (!onetApiKey) {
-        return NextResponse.json(
-          { error: "O*NET API key required for US labor market data" },
-          { status: 400 }
-        );
-      }
+        console.warn("[labor-market-data] O*NET API key not configured, skipping US data");
+        // Continue to EU data if applicable, don't fail
+      } else {
+        try {
+          // Search for occupation in O*NET
+          const onetResults = await searchONETOccupations(occupation, onetApiKey);
 
-      try {
-        // Search for occupation in O*NET
-        const onetResults = await searchONETOccupations(occupation, onetApiKey);
+          if (onetResults.length > 0) {
+            const bestMatch = onetResults[0];
+            const onetCode = bestMatch.code;
 
-        if (onetResults.length > 0) {
-          const bestMatch = onetResults[0];
-          const onetCode = bestMatch.code;
+            // Store O*NET data in taxonomy
+            taxonomy.onet = {
+              code: onetCode,
+              title: bestMatch.title,
+              description: bestMatch.description,
+            };
 
-          // Store O*NET data in taxonomy
-          taxonomy.onet = {
-            code: onetCode,
-            title: bestMatch.title,
-            description: bestMatch.description,
-          };
+            // Fetch O*NET skills, technology, activities, knowledge in parallel
+            const [skills, technology, workActivities, knowledge] = await Promise.all([
+              getONETSkills(onetCode, onetApiKey),
+              getONETTechnology(onetCode, onetApiKey),
+              getONETWorkActivities(onetCode, onetApiKey),
+              getONETKnowledge(onetCode, onetApiKey),
+            ]);
 
-          // Fetch O*NET skills, technology, activities, knowledge in parallel
-          const [skills, technology, workActivities, knowledge] = await Promise.all([
-            getONETSkills(onetCode, onetApiKey),
-            getONETTechnology(onetCode, onetApiKey),
-            getONETWorkActivities(onetCode, onetApiKey),
-            getONETKnowledge(onetCode, onetApiKey),
-          ]);
-
-          // Build SkillsData
-          const skillsData: SkillsData = {
-            core_skills: skills
-              .filter((s) => s.scale_id === "IM") // Importance
-              .map((s) => ({
-                name: s.element_name,
-                importance: s.data_value,
-                level: skills.find((l) => l.element_id === s.element_id && l.scale_id === "LV")
-                  ?.data_value || 0,
-                category: "technical", // Simplified categorization
+            // Build SkillsData
+            const skillsData: SkillsData = {
+              core_skills: skills
+                .map((s) => ({
+                  name: s.name,
+                  importance: s.importance,
+                  level: 0,
+                  category: "technical", // Simplified categorization
+                })),
+              technology_skills: technology.map((t) => ({
+                name: t.title,
+                category: "Software", // Simplified
+                examples: [t.title],
               })),
-            technology_skills: technology.map((t) => ({
-              name: t.example_name,
-              category: "Software", // Simplified
-              examples: [t.example_name],
-            })),
-            work_activities: workActivities
-              .filter((a) => a.scale_id === "IM")
-              .map((a) => ({
-                name: a.element_name,
-                importance: a.data_value,
-                level: workActivities.find((l) => l.element_id === a.element_id && l.scale_id === "LV")
-                  ?.data_value || 0,
-              })),
-            knowledge_requirements: knowledge
-              .filter((k) => k.scale_id === "IM")
-              .map((k) => ({
-                name: k.element_name,
-                importance: k.data_value,
-                level: knowledge.find((l) => l.element_id === k.element_id && l.scale_id === "LV")
-                  ?.data_value || 0,
-              })),
-          };
+              work_activities: workActivities
+                .map((a) => ({
+                  name: a.name,
+                  importance: a.importance,
+                  level: 0,
+                })),
+              knowledge_requirements: knowledge
+                .map((k) => ({
+                  name: k.name,
+                  importance: k.importance,
+                  level: 0,
+                })),
+            };
 
-          laborMarketData.skills = skillsData;
-          laborMarketData.metadata!.data_sources.push("O*NET");
+            laborMarketData.skills = skillsData;
+            laborMarketData.metadata!.data_sources.push("O*NET");
 
-          // Fetch BLS employment and wage data
-          if (blsApiKey) {
-            try {
-              const currentYear = new Date().getFullYear();
-              const startYear = currentYear - 5;
+            // Fetch BLS employment and wage data
+            if (blsApiKey) {
+              try {
+                const currentYear = new Date().getFullYear();
+                const startYear = currentYear - 5;
 
-              const wageSeriesId = getWageSeriesId(onetCode);
-              const employmentSeriesId = getEmploymentSeriesId(onetCode);
+                const wageSeriesId = getWageSeriesId(onetCode);
+                const employmentSeriesId = getEmploymentSeriesId(onetCode);
 
-              const blsData = await getBLSData(
-                [wageSeriesId, employmentSeriesId],
-                startYear,
-                currentYear,
-                blsApiKey
-              );
+                const blsData = await getBLSData(
+                  [wageSeriesId, employmentSeriesId],
+                  startYear,
+                  currentYear,
+                  blsApiKey
+                );
 
-              const wageSeries = blsData.find((s) => s.seriesID === wageSeriesId);
-              const employmentSeries = blsData.find((s) => s.seriesID === employmentSeriesId);
+                const wageSeries = blsData.find((s) => s.seriesID === wageSeriesId);
+                const employmentSeries = blsData.find((s) => s.seriesID === employmentSeriesId);
 
-              if (wageSeries) {
-                const medianWage = getLatestValue(wageSeries);
-                if (medianWage !== null) {
-                  laborMarketData.wages = {
-                    median_wage: medianWage,
-                    currency: "USD",
-                  };
+                if (wageSeries) {
+                  const medianWage = getLatestValue(wageSeries);
+                  if (medianWage !== null) {
+                    laborMarketData.wages = {
+                      median_wage: medianWage,
+                      currency: "USD",
+                    };
+                  }
                 }
-              }
 
-              if (employmentSeries) {
-                const totalEmployment = getLatestValue(employmentSeries);
-                const employmentTrend = getTrend(employmentSeries);
+                if (employmentSeries) {
+                  const totalEmployment = getLatestValue(employmentSeries);
+                  const employmentTrend = getTrend(employmentSeries);
 
-                if (totalEmployment !== null) {
-                  laborMarketData.employment = {
-                    total_employment: totalEmployment,
-                    employment_trends: employmentTrend.map((t) => ({
-                      year: t.year,
-                      employment: t.value,
-                    })),
-                  };
+                  if (totalEmployment !== null) {
+                    laborMarketData.employment = {
+                      total_employment: totalEmployment,
+                      employment_trends: employmentTrend.map((t) => ({
+                        year: t.year,
+                        employment: t.value,
+                      })),
+                    };
+                  }
                 }
-              }
 
-              laborMarketData.metadata!.data_sources.push("BLS");
-            } catch (blsError) {
-              console.error("BLS API error:", blsError);
-              // Continue without BLS data
+                laborMarketData.metadata!.data_sources.push("BLS");
+              } catch (blsError) {
+                console.error("BLS API error:", blsError);
+                // Continue without BLS data
+              }
             }
           }
+        } catch (onetError) {
+          console.error("O*NET API error:", onetError);
+          // Continue to EU data if applicable
         }
-      } catch (onetError) {
-        console.error("O*NET API error:", onetError);
-        // Continue to EU data if applicable
       }
     }
 
@@ -289,6 +282,24 @@ export async function POST(request: NextRequest) {
               // Continue without Eurostat data
             }
           }
+
+          // Fetch OECD Data (Adult Education / Tertiary Attainment)
+          try {
+            const oecdData = await getOECDEducationData("OAVG"); // OECD Average
+            if (oecdData && oecdData.length > 0) {
+              const latestOECD = oecdData[0]; // Assuming highest year is first or only one
+              laborMarketData.metadata!.data_sources.push("OECD.Stat");
+
+              // We'll insert it into skills metadata or education metadata in taxonomy
+              taxonomy.education_attainment_oecd_average = {
+                year: latestOECD.year,
+                tertiary_percentage: latestOECD.value
+              };
+            }
+          } catch (oecdError) {
+            console.error("OECD API error:", oecdError);
+          }
+
         }
       } catch (escoError) {
         console.error("ESCO API error:", escoError);

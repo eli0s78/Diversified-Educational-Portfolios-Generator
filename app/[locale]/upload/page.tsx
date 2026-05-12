@@ -18,13 +18,14 @@ import {
   GraduationCap,
   ArrowRight,
   AlertCircle,
+  Eye,
+  Download,
 } from "lucide-react";
 import { parseTopicsCSV, parsePapersCSV } from "@/lib/engine/data-loader";
 import { extractTextFromPDF } from "@/lib/pdf-extract";
 import {
   getCurrentProject,
   saveProject,
-  getActiveProviderSettings,
 } from "@/lib/project-manager";
 import { useProject } from "@/lib/project-context";
 import { Badge } from "@/components/ui/Badge";
@@ -32,11 +33,13 @@ import {
   RefreshCw,
   Database,
   FolderOpen,
+  Trash2,
 } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import type { TopicInfo, Paper } from "@/lib/engine/portfolio-types";
 import { ResearchWizard } from "@/components/research/ResearchWizard";
 import type { AcademicPaper, TopicInfo as ResearchTopicInfo, SectorReport } from "@/lib/types/research";
+import { DataViewerModal } from "@/components/ui/DataViewerModal";
 
 const PIPELINE_STEPS = [
   { key: "parse", icon: Table2 },
@@ -49,7 +52,7 @@ export default function UploadPage() {
   const t = useTranslations("upload");
   const locale = useLocale();
   const router = useRouter();
-  const { currentProject, refreshCurrentProject, uploadFiles, setUploadFiles } = useProject();
+  const { currentProject, updateProject, refreshCurrentProject, uploadFiles, setUploadFiles } = useProject();
 
   // File state (persisted in context across tab switches)
   const pdfFiles = uploadFiles.pdfFiles;
@@ -85,6 +88,123 @@ export default function UploadPage() {
     paperCount: number;
   }
   const [existingData, setExistingData] = useState<ExistingData | null>(null);
+
+  const removeExistingReport = (name: string) => {
+    if (!currentProject || !currentProject.sourceData) return;
+    const newReports = currentProject.sourceData.reports.filter((r) => r.name !== name);
+    const newSourceData = { ...currentProject.sourceData, reports: newReports };
+    const isEmpty = newReports.length === 0 && !newSourceData.topicsFileName && !newSourceData.papersFileName;
+    const updatedProject = {
+      ...currentProject,
+      sourceData: isEmpty ? null : newSourceData,
+      pipelineStep: -1,
+      analysis: null,
+      portfolioResult: null,
+      courses: [],
+      courseSupervisors: null,
+    };
+    updateProject(updatedProject);
+    setPipelineStep(-1);
+  };
+
+  const removeExistingTopics = () => {
+    if (!currentProject || !currentProject.sourceData) return;
+    const newSourceData = { ...currentProject.sourceData, topicsFileName: undefined, topics: [] };
+    const isEmpty = newSourceData.reports.length === 0 && !newSourceData.topicsFileName && !newSourceData.papersFileName;
+    const updatedProject = {
+      ...currentProject,
+      sourceData: isEmpty ? null : newSourceData,
+      pipelineStep: -1,
+      analysis: null,
+      portfolioResult: null,
+      courses: [],
+      courseSupervisors: null,
+    };
+    updateProject(updatedProject);
+    setPipelineStep(-1);
+  };
+
+  const removeExistingPapers = () => {
+    if (!currentProject || !currentProject.sourceData) return;
+    const newSourceData = { ...currentProject.sourceData, papersFileName: undefined, papers: [] };
+    const isEmpty = newSourceData.reports.length === 0 && !newSourceData.topicsFileName && !newSourceData.papersFileName;
+    const updatedProject = {
+      ...currentProject,
+      sourceData: isEmpty ? null : newSourceData,
+      pipelineStep: -1,
+      analysis: null,
+      portfolioResult: null,
+      courses: [],
+      courseSupervisors: null,
+    };
+    updateProject(updatedProject);
+    setPipelineStep(-1);
+  };
+
+  // --- Viewer modal state ---
+  const [viewerModal, setViewerModal] = useState<{
+    open: boolean;
+    title: string;
+    type: "report" | "topics" | "papers";
+    reportContent?: string;
+  }>({ open: false, title: "", type: "report" });
+
+  const openViewer = (title: string, type: "report" | "topics" | "papers", reportContent?: string) => {
+    setViewerModal({ open: true, title, type, reportContent });
+  };
+
+  const closeViewer = () => {
+    setViewerModal((prev) => ({ ...prev, open: false }));
+  };
+
+  // --- Download helpers ---
+  const triggerDownload = (filename: string, content: string, mime: string) => {
+    const blob = new Blob([content], { type: mime });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const downloadReport = (name: string) => {
+    if (!currentProject?.sourceData) return;
+    const report = currentProject.sourceData.reports.find((r) => r.name === name);
+    if (report) triggerDownload(name.replace(/\.pdf$/i, "") + ".txt", report.textContent, "text/plain;charset=utf-8;");
+  };
+
+  const downloadTopics = () => {
+    if (!currentProject?.sourceData) return;
+    const topics = currentProject.sourceData.topics;
+    const headers = ["TopicNumber", "Count", "Name", "Keywords", "Rarity"];
+    const rows = topics.filter(t => t.topicNumber >= 0).map(t => [
+      t.topicNumber,
+      t.count,
+      `"${t.name.replace(/"/g, '""')}"`,
+      `"${t.keywords.join(', ').replace(/"/g, '""')}"`,
+      t.rarityLabel,
+    ]);
+    const csv = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+    triggerDownload("topics.csv", csv, "text/csv;charset=utf-8;");
+  };
+
+  const downloadPapers = () => {
+    if (!currentProject?.sourceData) return;
+    const papers = currentProject.sourceData.papers;
+    const headers = ["ID", "Title", "Year", "Authors", "DOI", "Venue", "TopicNumber"];
+    const rows = papers.map(p => [
+      p.id,
+      `"${p.title.replace(/"/g, '""')}"`,
+      p.year,
+      `"${p.authors.replace(/"/g, '""')}"`,
+      p.doi || "",
+      `"${(p.venue || "").replace(/"/g, '""')}"`,
+      p.topicNumber,
+    ]);
+    const csv = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+    triggerDownload("papers.csv", csv, "text/csv;charset=utf-8;");
+  };
 
   const pdfInputRef = useRef<HTMLInputElement>(null);
   const topicsInputRef = useRef<HTMLInputElement>(null);
@@ -136,8 +256,6 @@ export default function UploadPage() {
       setRunning(false);
       return;
     }
-
-    const active = getActiveProviderSettings();
 
     try {
       let topics: TopicInfo[];
@@ -209,8 +327,7 @@ export default function UploadPage() {
           topics,
           reportTexts,
           language: locale,
-          apiKey: active.apiKey || undefined,
-          modelId: active.verifiedModel || undefined,
+          // apiKey and modelId now handled server-side
         }),
       });
 
@@ -375,329 +492,348 @@ export default function UploadPage() {
 
       {/* Upload Tab Content */}
       {activeTab === "upload" && (
-      <div className="space-y-6">
-        {/* Existing Data Summary */}
-        {existingData && (
-          <div className="rounded-xl border border-border bg-card p-5">
-            <div className="mb-4 flex items-center gap-2">
-              <Database className="h-5 w-5 text-primary" />
-              <h3 className="text-sm font-semibold">{t("existing_data")}</h3>
-              {pipelineStep === 2 && (
-                <Badge variant="success">{t("pipeline_complete_badge")}</Badge>
-              )}
-            </div>
+        <div className="space-y-6">
+          {/* Existing Data Summary */}
+          {existingData && (
+            <div className="rounded-xl border border-border bg-card p-5">
+              <div className="mb-4 flex items-center gap-2">
+                <Database className="h-5 w-5 text-primary" />
+                <h3 className="text-sm font-semibold">{t("existing_data")}</h3>
+                {pipelineStep === 2 && (
+                  <Badge variant="success">{t("pipeline_complete_badge")}</Badge>
+                )}
+              </div>
 
-            {/* Uploaded files list */}
-            <div className="mb-4 space-y-2">
-              {/* Topics CSV — always present */}
-              {existingData.topicsFileName && (
-                <div className="flex items-center gap-2.5 rounded-lg border border-border px-3 py-2">
-                  <Table2 className="h-4 w-4 shrink-0 text-success" />
-                  <span className="min-w-0 flex-1 truncate text-sm font-medium">{existingData.topicsFileName}</span>
-                  <span className="shrink-0 text-xs text-muted-foreground">
-                    {existingData.topicCount} {t("topics_count").toLowerCase()}
-                  </span>
-                </div>
-              )}
-              {!existingData.topicsFileName && (
-                <div className="flex items-center gap-2.5 rounded-lg border border-border px-3 py-2">
-                  <Table2 className="h-4 w-4 shrink-0 text-success" />
-                  <span className="min-w-0 flex-1 text-sm font-medium">{t("topics_label")}</span>
-                  <span className="shrink-0 text-xs text-muted-foreground">
-                    {existingData.topicCount} {t("topics_count").toLowerCase()}
-                  </span>
-                </div>
-              )}
+              {/* Uploaded files list */}
+              <div className="mb-4 space-y-2">
+                {/* Topics CSV — always present */}
+                {existingData.topicsFileName && (
+                  <div className="flex items-center gap-2.5 rounded-lg border border-border px-3 py-2 group">
+                    <Table2 className="h-4 w-4 shrink-0 text-success" />
+                    <span className="min-w-0 flex-1 truncate text-sm font-medium">{existingData.topicsFileName}</span>
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      {existingData.topicCount} {t("topics_count").toLowerCase()}
+                    </span>
+                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                      <button onClick={() => openViewer(existingData.topicsFileName || "Topics", "topics")} className="shrink-0 p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-md transition-colors" title="View topics"><Eye className="h-3.5 w-3.5" /></button>
+                      <button onClick={downloadTopics} className="shrink-0 p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-md transition-colors" title="Download topics CSV"><Download className="h-3.5 w-3.5" /></button>
+                      <button onClick={removeExistingTopics} className="shrink-0 p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors" title="Remove topics"><Trash2 className="h-3.5 w-3.5" /></button>
+                    </div>
+                  </div>
+                )}
+                {!existingData.topicsFileName && (
+                  <div className="flex items-center gap-2.5 rounded-lg border border-border px-3 py-2 group">
+                    <Table2 className="h-4 w-4 shrink-0 text-success" />
+                    <span className="min-w-0 flex-1 text-sm font-medium">{t("topics_label")}</span>
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      {existingData.topicCount} {t("topics_count").toLowerCase()}
+                    </span>
+                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                      <button onClick={() => openViewer("Topics", "topics")} className="shrink-0 p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-md transition-colors" title="View topics"><Eye className="h-3.5 w-3.5" /></button>
+                      <button onClick={downloadTopics} className="shrink-0 p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-md transition-colors" title="Download topics CSV"><Download className="h-3.5 w-3.5" /></button>
+                    </div>
+                  </div>
+                )}
 
-              {/* Papers CSV — optional */}
-              {existingData.paperCount > 0 && (
-                <div className="flex items-center gap-2.5 rounded-lg border border-border px-3 py-2">
-                  <Table2 className="h-4 w-4 shrink-0 text-success" />
-                  <span className="min-w-0 flex-1 truncate text-sm font-medium">
-                    {existingData.papersFileName || t("papers_label")}
-                  </span>
-                  <span className="shrink-0 text-xs text-muted-foreground">
-                    {existingData.paperCount} {t("papers_count").toLowerCase()}
-                  </span>
-                </div>
-              )}
+                {/* Papers CSV — optional */}
+                {existingData.paperCount > 0 && (
+                  <div className="flex items-center gap-2.5 rounded-lg border border-border px-3 py-2 group">
+                    <Table2 className="h-4 w-4 shrink-0 text-success" />
+                    <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                      {existingData.papersFileName || t("papers_label")}
+                    </span>
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      {existingData.paperCount} {t("papers_count").toLowerCase()}
+                    </span>
+                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                      <button onClick={() => openViewer(existingData.papersFileName || "Papers", "papers")} className="shrink-0 p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-md transition-colors" title="View papers"><Eye className="h-3.5 w-3.5" /></button>
+                      <button onClick={downloadPapers} className="shrink-0 p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-md transition-colors" title="Download papers CSV"><Download className="h-3.5 w-3.5" /></button>
+                      <button onClick={removeExistingPapers} className="shrink-0 p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors" title="Remove papers"><Trash2 className="h-3.5 w-3.5" /></button>
+                    </div>
+                  </div>
+                )}
 
-              {/* PDF reports */}
-              {existingData.reportNames.map((name, i) => (
-                <div key={i} className="flex items-center gap-2.5 rounded-lg border border-border px-3 py-2">
-                  <FileText className="h-4 w-4 shrink-0 text-primary" />
-                  <span className="min-w-0 flex-1 truncate text-sm font-medium">{name}</span>
-                  <span className="shrink-0 text-xs text-muted-foreground">PDF</span>
-                </div>
-              ))}
-            </div>
-
-            <button
-              onClick={runPipeline}
-              disabled={running}
-              className={cn(
-                "flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium transition-colors",
-                running
-                  ? "bg-muted text-muted-foreground cursor-not-allowed"
-                  : "bg-primary/10 text-primary hover:bg-primary/20"
-              )}
-            >
-              <RefreshCw className={cn("h-4 w-4", running && "animate-spin")} />
-              {t("reanalyze")}
-            </button>
-          </div>
-        )}
-
-        {/* PDF Reports Dropzone */}
-        <div>
-          <label className="mb-2 block text-sm font-semibold">
-            {t("pdf_label")}
-            <span className="ml-2 text-xs font-normal text-muted-foreground">
-              ({t("optional")})
-            </span>
-          </label>
-          <div
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={handlePdfDrop}
-            onClick={() => pdfInputRef.current?.click()}
-            className="flex min-h-[100px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-card p-6 transition-colors hover:border-primary/50 hover:bg-muted/30"
-          >
-            <FileText className="mb-2 h-8 w-8 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">
-              {t("pdf_hint")}
-            </p>
-            {pdfFiles.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-2">
-                {pdfFiles.map((f, i) => (
-                  <span
-                    key={i}
-                    className="flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary"
-                  >
-                    <FileText className="h-3 w-3" />
-                    {f.name}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setPdfFiles((prev) => prev.filter((_, idx) => idx !== i));
-                      }}
-                      className="ml-0.5 rounded-full p-0.5 transition-colors hover:bg-primary/20"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </span>
+                {/* PDF reports */}
+                {existingData.reportNames.map((name, i) => (
+                  <div key={i} className="flex items-center gap-2.5 rounded-lg border border-border px-3 py-2 group">
+                    <FileText className="h-4 w-4 shrink-0 text-primary" />
+                    <span className="min-w-0 flex-1 truncate text-sm font-medium">{name}</span>
+                    <span className="shrink-0 text-xs text-muted-foreground mr-1">PDF</span>
+                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                      <button onClick={() => openViewer(name, "report", currentProject?.sourceData?.reports.find(r => r.name === name)?.textContent)} className="shrink-0 p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-md transition-colors" title="View report"><Eye className="h-3.5 w-3.5" /></button>
+                      <button onClick={() => downloadReport(name)} className="shrink-0 p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-md transition-colors" title="Download report"><Download className="h-3.5 w-3.5" /></button>
+                      <button onClick={() => removeExistingReport(name)} className="shrink-0 p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors" title="Remove report"><Trash2 className="h-3.5 w-3.5" /></button>
+                    </div>
+                  </div>
                 ))}
               </div>
-            )}
-          </div>
-          <input
-            ref={pdfInputRef}
-            type="file"
-            accept=".pdf"
-            multiple
-            className="hidden"
-            onChange={(e) => {
-              const files = Array.from(e.target.files || []);
-              setPdfFiles((prev) => [...prev, ...files]);
-            }}
-          />
-        </div>
 
-        {/* Topics CSV Dropzone */}
-        <div>
-          <label className="mb-2 block text-sm font-semibold">
-            {t("topics_label")}
-            <span className="ml-2 text-xs font-normal text-destructive">
-              ({t("required")})
-            </span>
-          </label>
-          <div
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => handleCsvDrop(e, setTopicsFile)}
-            onClick={() => topicsInputRef.current?.click()}
-            className={cn(
-              "flex min-h-[80px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed bg-card p-6 transition-colors hover:bg-muted/30",
-              topicsFile
-                ? "border-success/50"
-                : "border-border hover:border-primary/50"
-            )}
-          >
-            <Table2 className="mb-2 h-7 w-7 text-muted-foreground" />
-            {topicsFile ? (
-              <span className="flex items-center gap-2 text-sm font-medium text-success">
-                <CheckCircle2 className="h-4 w-4" />
-                {topicsFile.name}
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setTopicsFile(null);
-                  }}
-                  className="ml-1 rounded-full p-0.5 transition-colors hover:bg-destructive/10 hover:text-destructive"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
+              <button
+                onClick={runPipeline}
+                disabled={running}
+                className={cn(
+                  "flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium transition-colors",
+                  running
+                    ? "bg-muted text-muted-foreground cursor-not-allowed"
+                    : "bg-primary/10 text-primary hover:bg-primary/20"
+                )}
+              >
+                <RefreshCw className={cn("h-4 w-4", running && "animate-spin")} />
+                {t("reanalyze")}
+              </button>
+            </div>
+          )}
+
+          {/* PDF Reports Dropzone */}
+          <div>
+            <label className="mb-2 block text-sm font-semibold">
+              {t("pdf_label")}
+              <span className="ml-2 text-xs font-normal text-muted-foreground">
+                ({t("optional")})
               </span>
-            ) : (
+            </label>
+            <div
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={handlePdfDrop}
+              onClick={() => pdfInputRef.current?.click()}
+              className="flex min-h-[100px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-card p-6 transition-colors hover:border-primary/50 hover:bg-muted/30"
+            >
+              <FileText className="mb-2 h-8 w-8 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">
-                {t("topics_hint")}
+                {t("pdf_hint")}
               </p>
-            )}
-          </div>
-          <input
-            ref={topicsInputRef}
-            type="file"
-            accept=".csv"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) setTopicsFile(file);
-            }}
-          />
-        </div>
-
-        {/* Papers CSV Dropzone */}
-        <div>
-          <label className="mb-2 block text-sm font-semibold">
-            {t("papers_label")}
-            <span className="ml-2 text-xs font-normal text-muted-foreground">
-              ({t("optional")})
-            </span>
-          </label>
-          <div
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => handleCsvDrop(e, setPapersFile)}
-            onClick={() => papersInputRef.current?.click()}
-            className={cn(
-              "flex min-h-[80px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed bg-card p-6 transition-colors hover:bg-muted/30",
-              papersFile
-                ? "border-success/50"
-                : "border-border hover:border-primary/50"
-            )}
-          >
-            <Table2 className="mb-2 h-7 w-7 text-muted-foreground" />
-            {papersFile ? (
-              <span className="flex items-center gap-2 text-sm font-medium text-success">
-                <CheckCircle2 className="h-4 w-4" />
-                {papersFile.name}
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setPapersFile(null);
-                  }}
-                  className="ml-1 rounded-full p-0.5 transition-colors hover:bg-destructive/10 hover:text-destructive"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              </span>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                {t("papers_hint")}
-              </p>
-            )}
-          </div>
-          <input
-            ref={papersInputRef}
-            type="file"
-            accept=".csv"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) setPapersFile(file);
-            }}
-          />
-        </div>
-
-        {/* Pipeline Progress */}
-        {pipelineStep >= 0 && (
-          <div className="rounded-xl border border-border bg-card p-6">
-            <h3 className="mb-4 text-sm font-semibold">{t("pipeline_title")}</h3>
-            <div className="space-y-3">
-              {PIPELINE_STEPS.map((step, i) => {
-                const Icon = step.icon;
-                const isActive = pipelineStep === i;
-                const isDone = pipelineStep > i;
-                const isFailed = pipelineError && pipelineStep === i;
-
-                return (
-                  <div
-                    key={step.key}
-                    className={cn(
-                      "flex items-center gap-3 rounded-lg px-4 py-3 text-sm transition-colors",
-                      isActive && !isFailed && "bg-primary/5",
-                      isDone && "text-success",
-                      isFailed && "bg-destructive/5 text-destructive"
-                    )}
-                  >
-                    {isDone ? (
-                      <CheckCircle2 className="h-5 w-5 shrink-0 text-success" />
-                    ) : isActive && !isFailed ? (
-                      <Loader2 className="h-5 w-5 shrink-0 animate-spin text-primary" />
-                    ) : isFailed ? (
-                      <XCircle className="h-5 w-5 shrink-0 text-destructive" />
-                    ) : (
-                      <Icon className="h-5 w-5 shrink-0 text-muted-foreground" />
-                    )}
-                    <span className={cn("font-medium", !isDone && !isActive && "text-muted-foreground")}>
-                      {t(`pipeline_${step.key}`)}
+              {pdfFiles.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {pdfFiles.map((f, i) => (
+                    <span
+                      key={i}
+                      className="flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary"
+                    >
+                      <FileText className="h-3 w-3" />
+                      {f.name}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPdfFiles((prev) => prev.filter((_, idx) => idx !== i));
+                        }}
+                        className="ml-0.5 rounded-full p-0.5 transition-colors hover:bg-primary/20"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
                     </span>
-                  </div>
-                );
-              })}
+                  ))}
+                </div>
+              )}
             </div>
+            <input
+              ref={pdfInputRef}
+              type="file"
+              accept=".pdf"
+              multiple
+              className="hidden"
+              onChange={(e) => {
+                const files = Array.from(e.target.files || []);
+                setPdfFiles((prev) => [...prev, ...files]);
+              }}
+            />
+          </div>
 
-            {pipelineComplete && (
-              <div className="mt-4 flex items-center gap-2 rounded-lg bg-success/10 px-4 py-3 text-sm font-medium text-success">
-                <CheckCircle2 className="h-5 w-5" />
-                {t("pipeline_complete")}
+          {/* Topics CSV Dropzone */}
+          <div>
+            <label className="mb-2 block text-sm font-semibold">
+              {t("topics_label")}
+              <span className="ml-2 text-xs font-normal text-destructive">
+                ({t("required")})
+              </span>
+            </label>
+            <div
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => handleCsvDrop(e, setTopicsFile)}
+              onClick={() => topicsInputRef.current?.click()}
+              className={cn(
+                "flex min-h-[80px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed bg-card p-6 transition-colors hover:bg-muted/30",
+                topicsFile
+                  ? "border-success/50"
+                  : "border-border hover:border-primary/50"
+              )}
+            >
+              <Table2 className="mb-2 h-7 w-7 text-muted-foreground" />
+              {topicsFile ? (
+                <span className="flex items-center gap-2 text-sm font-medium text-success">
+                  <CheckCircle2 className="h-4 w-4" />
+                  {topicsFile.name}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setTopicsFile(null);
+                    }}
+                    className="ml-1 rounded-full p-0.5 transition-colors hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </span>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  {t("topics_hint")}
+                </p>
+              )}
+            </div>
+            <input
+              ref={topicsInputRef}
+              type="file"
+              accept=".csv"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) setTopicsFile(file);
+              }}
+            />
+          </div>
+
+          {/* Papers CSV Dropzone */}
+          <div>
+            <label className="mb-2 block text-sm font-semibold">
+              {t("papers_label")}
+              <span className="ml-2 text-xs font-normal text-muted-foreground">
+                ({t("optional")})
+              </span>
+            </label>
+            <div
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => handleCsvDrop(e, setPapersFile)}
+              onClick={() => papersInputRef.current?.click()}
+              className={cn(
+                "flex min-h-[80px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed bg-card p-6 transition-colors hover:bg-muted/30",
+                papersFile
+                  ? "border-success/50"
+                  : "border-border hover:border-primary/50"
+              )}
+            >
+              <Table2 className="mb-2 h-7 w-7 text-muted-foreground" />
+              {papersFile ? (
+                <span className="flex items-center gap-2 text-sm font-medium text-success">
+                  <CheckCircle2 className="h-4 w-4" />
+                  {papersFile.name}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPapersFile(null);
+                    }}
+                    className="ml-1 rounded-full p-0.5 transition-colors hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </span>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  {t("papers_hint")}
+                </p>
+              )}
+            </div>
+            <input
+              ref={papersInputRef}
+              type="file"
+              accept=".csv"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) setPapersFile(file);
+              }}
+            />
+          </div>
+
+          {/* Pipeline Progress */}
+          {pipelineStep >= 0 && (
+            <div className="rounded-xl border border-border bg-card p-6">
+              <h3 className="mb-4 text-sm font-semibold">{t("pipeline_title")}</h3>
+              <div className="space-y-3">
+                {PIPELINE_STEPS.map((step, i) => {
+                  const Icon = step.icon;
+                  const isActive = pipelineStep === i;
+                  const isDone = pipelineStep > i;
+                  const isFailed = pipelineError && pipelineStep === i;
+
+                  return (
+                    <div
+                      key={step.key}
+                      className={cn(
+                        "flex items-center gap-3 rounded-lg px-4 py-3 text-sm transition-colors",
+                        isActive && !isFailed && "bg-primary/5",
+                        isDone && "text-success",
+                        isFailed && "bg-destructive/5 text-destructive"
+                      )}
+                    >
+                      {isDone ? (
+                        <CheckCircle2 className="h-5 w-5 shrink-0 text-success" />
+                      ) : isActive && !isFailed ? (
+                        <Loader2 className="h-5 w-5 shrink-0 animate-spin text-primary" />
+                      ) : isFailed ? (
+                        <XCircle className="h-5 w-5 shrink-0 text-destructive" />
+                      ) : (
+                        <Icon className="h-5 w-5 shrink-0 text-muted-foreground" />
+                      )}
+                      <span className={cn("font-medium", !isDone && !isActive && "text-muted-foreground")}>
+                        {t(`pipeline_${step.key}`)}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
-            )}
-          </div>
-        )}
 
-        {/* Error */}
-        {pipelineError && (
-          <div className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4">
-            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
-            <div>
-              <p className="text-sm font-medium text-destructive">{t("pipeline_error")}</p>
-              <p className="mt-1 text-xs text-destructive/80">{pipelineError}</p>
+              {pipelineComplete && (
+                <div className="mt-4 flex items-center gap-2 rounded-lg bg-success/10 px-4 py-3 text-sm font-medium text-success">
+                  <CheckCircle2 className="h-5 w-5" />
+                  {t("pipeline_complete")}
+                </div>
+              )}
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Generate / View Results Button */}
-        <button
-          onClick={pipelineComplete ? () => router.push("/analysis") : runPipeline}
-          disabled={pipelineComplete ? false : (!canStart || running)}
-          className={cn(
-            "flex w-full items-center justify-center gap-2 rounded-xl py-4 text-lg font-semibold transition-colors",
-            pipelineComplete
-              ? "bg-success text-white hover:bg-success/90"
-              : canStart && !running
-                ? "bg-primary text-white hover:bg-primary-hover"
-                : "bg-muted text-muted-foreground cursor-not-allowed"
+          {/* Error */}
+          {pipelineError && (
+            <div className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4">
+              <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
+              <div>
+                <p className="text-sm font-medium text-destructive">{t("pipeline_error")}</p>
+                <p className="mt-1 text-xs text-destructive/80">{pipelineError}</p>
+              </div>
+            </div>
           )}
-        >
-          {running ? (
-            <>
-              <Loader2 className="h-5 w-5 animate-spin" />
-              {t("generating")}
-            </>
-          ) : pipelineComplete ? (
-            <>
-              {t("view_results")}
-              <ArrowRight className="h-5 w-5" />
-            </>
-          ) : (
-            <>
-              <Upload className="h-5 w-5" />
-              {t("pipeline_analyze")}
-            </>
-          )}
-        </button>
-      </div>
+
+          {/* Generate / View Results Button */}
+          <button
+            onClick={pipelineComplete ? () => router.push("/analysis") : runPipeline}
+            disabled={pipelineComplete ? false : (!canStart || running)}
+            className={cn(
+              "flex w-full items-center justify-center gap-2 rounded-xl py-4 text-lg font-semibold transition-colors",
+              pipelineComplete
+                ? "bg-success text-white hover:bg-success/90"
+                : canStart && !running
+                  ? "bg-primary text-white hover:bg-primary-hover"
+                  : "bg-muted text-muted-foreground cursor-not-allowed"
+            )}
+          >
+            {running ? (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin" />
+                {t("generating")}
+              </>
+            ) : pipelineComplete ? (
+              <>
+                {t("view_results")}
+                <ArrowRight className="h-5 w-5" />
+              </>
+            ) : (
+              <>
+                <Upload className="h-5 w-5" />
+                {t("pipeline_analyze")}
+              </>
+            )}
+          </button>
+        </div>
       )}
 
       {/* Generate Tab Content */}
@@ -710,6 +846,17 @@ export default function UploadPage() {
           </div>
         </div>
       )}
+
+      {/* Data Viewer Modal */}
+      <DataViewerModal
+        open={viewerModal.open}
+        onClose={closeViewer}
+        title={viewerModal.title}
+        type={viewerModal.type}
+        reportContent={viewerModal.reportContent}
+        topics={currentProject?.sourceData?.topics}
+        papers={currentProject?.sourceData?.papers}
+      />
     </div>
   );
 }

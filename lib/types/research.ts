@@ -64,6 +64,10 @@ export interface OccupationTaxonomy {
   keywords: string[]; // Search keywords generated from occupation
   synonyms: string[]; // Alternative terms
   region: 'US' | 'EU' | 'Global';
+  education_attainment_oecd_average?: {
+    year: number;
+    tertiary_percentage: number;
+  };
 }
 
 // ============================================================================
@@ -82,7 +86,7 @@ export interface AcademicPaper {
   venue?: string; // Journal/conference name
   authors: string[]; // Array of author names
   url?: string;
-  source: 'Semantic Scholar' | 'OpenAlex' | 'arXiv' | 'PubMed' | 'Exa' | 'Scopus';
+  source: 'Semantic Scholar' | 'OpenAlex' | 'arXiv' | 'PubMed' | 'Exa' | 'Scopus' | 'europe-pmc' | 'crossref' | 'biorxiv' | 'medrxiv' | 'core' | 'doab' | 'google-books' | 'open-library' | 'openstax' | 'merlot' | 'oasis' | 'local-upload' | 'tavily' | 'firecrawl' | 'jina-reader' | 'edgar';
   fields?: string[]; // Academic fields
   citationCount?: number;
   referenceCount?: number;
@@ -91,6 +95,10 @@ export interface AcademicPaper {
   // Topic modeling assignments (added after BERTopic)
   topicNumber?: number; // -1 for NO_TOPIC, 0-14 for topics
   rarityLabel?: 'COMMON' | 'RARE' | 'NO_TOPIC';
+
+  // Custom API extensions
+  pmcid?: string;
+  fullText?: string;
 }
 
 /**
@@ -102,7 +110,11 @@ export interface LiteratureCollectionRequest {
   year_from: number;
   year_to: number;
   max_papers: number;
-  sources?: Array<'semantic-scholar' | 'openalex' | 'arxiv' | 'pubmed' | 'exa'>;
+  sources?: Array<'semantic-scholar' | 'openalex' | 'arxiv' | 'pubmed' | 'exa' | 'europe-pmc' | 'crossref' | 'biorxiv' | 'medrxiv' | 'core' | 'doab' | 'google-books' | 'open-library' | 'openstax' | 'merlot' | 'oasis' | 'local-upload' | 'tavily' | 'firecrawl' | 'jina-reader' | 'edgar'>;
+  fetch_full_text?: boolean;
+  full_text_limit?: number;
+  semantic_scholar_api_key?: string;
+  google_books_api_key?: string;
   filters?: {
     language?: string[]; // e.g., ['en']
     peer_reviewed?: boolean;
@@ -122,6 +134,7 @@ export interface LiteratureCollectionResponse {
     sources_used: string[];
     duplicates_removed: number;
     query_time_ms: number;
+    warnings?: string[];
   };
 }
 
@@ -445,6 +458,9 @@ export interface ResearchAPIKeys {
   news_api_key?: string; // Free tier available
   tavily_api_key?: string; // Free tier available
   firecrawl_api_key?: string; // Free tier available
+  core_api_key?: string;
+  fred_api_key?: string;
+  google_books_api_key?: string;
 
   // BERTopic microservice
   bertopic_service_url?: string; // URL of separate microservice (e.g., Railway)

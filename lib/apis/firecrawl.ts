@@ -5,7 +5,7 @@
  * Docs: https://docs.firecrawl.dev/
  */
 
-const BASE_URL = "https://api.firecrawl.dev/v0";
+const BASE_URL = "https://api.firecrawl.dev/v1";
 
 export interface FirecrawlScrapeParams {
   url: string;

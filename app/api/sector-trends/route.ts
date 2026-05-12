@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { getONETTechnology, searchONETOccupations } from "@/lib/apis/onet";
 import { searchTavily, buildTrendsQuery, extractTechnologies } from "@/lib/apis/tavily";
 import { scrapeWithFirecrawl, extractInsights } from "@/lib/apis/firecrawl";
+import { searchEdgar10K } from "@/lib/apis/edgar";
+import { getFredSeries, getRelevantFredSeries } from "@/lib/apis/fred";
 import type { SectorTrendsData, Technology, ExogenousForces } from "@/lib/types/research";
-import { getSettings } from "@/lib/project-manager";
 
 export const runtime = "nodejs";
 export const maxDuration = 300; // 5 minutes
@@ -12,6 +13,10 @@ interface SectorTrendsRequest {
   occupation: string;
   keywords?: string[];
   timeframe?: string;
+  onet_api_key?: string;
+  tavily_api_key?: string;
+  firecrawl_api_key?: string;
+  fred_api_key?: string;
 }
 
 export async function POST(request: NextRequest) {
@@ -19,7 +24,15 @@ export async function POST(request: NextRequest) {
 
   try {
     const body: SectorTrendsRequest = await request.json();
-    const { occupation, keywords = [], timeframe = "2024-2026" } = body;
+    const {
+      occupation,
+      keywords = [],
+      timeframe = "2024-2026",
+      onet_api_key,
+      tavily_api_key,
+      firecrawl_api_key,
+      fred_api_key,
+    } = body;
 
     if (!occupation) {
       return NextResponse.json(
@@ -28,11 +41,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get API keys from settings
-    const settings = getSettings();
-    const onetApiKey = settings.onet_api_key;
-    const tavilyApiKey = settings.tavily_api_key;
-    const firecrawlApiKey = settings.firecrawl_api_key;
+    // Use API keys from request body (passed from client-side localStorage)
+    const onetApiKey = onet_api_key;
+    const tavilyApiKey = tavily_api_key;
+    const firecrawlApiKey = firecrawl_api_key;
+    const fredApiKey = fred_api_key;
 
     const technologies: Technology[] = [];
     const dataSources: string[] = [];
@@ -56,12 +69,12 @@ export async function POST(request: NextRequest) {
 
           for (const tech of onetTech) {
             technologies.push({
-              name: tech.example_name,
+              name: tech.title,
               category: "Software", // Simplified
               description: `Technology used in ${occupation}`,
               how_used: `Applied in ${occupation} workflows`,
               contribution: "Enhances productivity and quality",
-              adoption_level: tech.hot_technology === "Y" ? "growing" : "mature",
+              adoption_level: tech.hot_technology ? "growing" : "mature",
               sources: ["O*NET"],
             });
           }
@@ -197,6 +210,62 @@ export async function POST(request: NextRequest) {
         },
       ],
     };
+
+    // ============================================================
+    // SEC EDGAR API (10-K extraction)
+    // ============================================================
+    try {
+      // Look for the occupation specifically in deep company filings
+      const edgarResults = await searchEdgar10K(occupation);
+      if (edgarResults && edgarResults.length > 0) {
+        dataSources.push("SEC EDGAR");
+        let edgarMentions = 0;
+        for (const res of edgarResults) {
+          if (res.hits.fragments.length > 0) {
+            edgarMentions++;
+            // Could push to a specific field; we'll add it as an exogenous force
+            if (edgarMentions <= 2) {
+              exogenousForces.social.push({
+                force: "Corporate Strategy (10-K)",
+                description: `${res.entityName} discussed this area in recent filings.`,
+                impact: "medium",
+                sources: ["SEC EDGAR"],
+              });
+            }
+          }
+        }
+      }
+    } catch (edgarError) {
+      console.warn("EDGAR API error:", edgarError);
+    }
+
+    // ============================================================
+    // FRED Macroeconomic Indicators
+    // ============================================================
+    if (fredApiKey) {
+      try {
+        const relevantSeriesIds = getRelevantFredSeries(occupation, keywords);
+        const seriesPromises = relevantSeriesIds.map(id => getFredSeries(id, fredApiKey, 2));
+        const fredResults = await Promise.all(seriesPromises);
+
+        let fredFound = false;
+        for (const result of fredResults) {
+          if (result && result.observations.length > 0) {
+            fredFound = true;
+            exogenousForces.environmental.push({
+              force: `Macro Indicator: ${result.seriesId}`,
+              description: `${result.title} (latest: ${result.observations[result.observations.length - 1].value})`,
+              impact: "medium",
+              sources: ["FRED"],
+            });
+          }
+        }
+
+        if (fredFound) dataSources.push("FRED");
+      } catch (fredError) {
+        console.warn("FRED API error:", fredError);
+      }
+    }
 
     // ============================================================
     // Assemble response

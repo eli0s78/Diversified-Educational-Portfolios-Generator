@@ -63,8 +63,8 @@ export async function searchOpenAlex(
   // Build filter string
   const filters: string[] = [];
 
-  // Search in title and abstract
-  filters.push(`default.search:${encodeURIComponent(query)}`);
+  // Search in title and abstract (don't encode - URLSearchParams will handle it)
+  filters.push(`default.search:${query}`);
 
   if (fromYear && toYear) {
     filters.push(`publication_year:${fromYear}-${toYear}`);
@@ -87,6 +87,8 @@ export async function searchOpenAlex(
   url.searchParams.set("per-page", Math.min(limit, 200).toString());
   url.searchParams.set("page", page.toString());
 
+  console.log(`[OpenAlex] Searching: ${url.toString()}`);
+
   const headers: Record<string, string> = {
     "User-Agent": USER_AGENT,
     "Accept": "application/json",
@@ -101,6 +103,8 @@ export async function searchOpenAlex(
 
   const data = await response.json();
   const works: OpenAlexWork[] = data.results || [];
+
+  console.log(`[OpenAlex] Found ${works.length} works (meta.count: ${data.meta?.count || 0})`);
 
   return works.map(convertToAcademicPaper);
 }
