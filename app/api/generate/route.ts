@@ -6,6 +6,11 @@ import { getRelevantPapers } from "@/lib/engine/skill-mapper";
 import { TRAINING_DIRECTIONS, CourseOutlineSchema } from "@/lib/engine/portfolio-types";
 import type { TopicInfo, Paper } from "@/lib/engine/portfolio-types";
 import { matchSupervisorsToCoursesContentBased } from "@/lib/db/queries";
+import { getServerGeminiApiKey } from "@/lib/server-config";
+import { resolveGeminiModel } from "@/lib/ai/model-resolver";
+import { searchOpenStax } from "@/lib/apis/openstax";
+import { searchMerlot } from "@/lib/apis/merlot";
+import { searchOasis } from "@/lib/apis/oasis";
 
 // Allow execution for up to 60 seconds (maximum for Vercel Hobby Free Tier)
 export const maxDuration = 60;
@@ -25,8 +30,6 @@ export async function POST(request: Request) {
       targetAudience = "",
       educationLevel = "bachelor",
       language = "en",
-      apiKey,
-      modelId,
       directionIndex,
     } = body as {
       weights: number[];
@@ -40,17 +43,18 @@ export async function POST(request: Request) {
       targetAudience: string;
       educationLevel: string;
       language: "en" | "el";
-      apiKey?: string;
-      modelId?: string;
       directionIndex?: number;
     };
 
+    // Use server-side API key (secure - never exposed to client)
+    const apiKey = getServerGeminiApiKey();
     if (!apiKey) {
-      return NextResponse.json(
-        { error: "API key is required. Please provide your Gemini API key in Settings." },
-        { status: 400 }
-      );
+      throw new Error("Server API key not configured");
     }
+
+    // Strictly resolve the active 3.1+ model
+    // This will throw if a 3.1+ model is not found, blocking the generation
+    const modelId = await resolveGeminiModel(apiKey, { strict: true });
 
     const provider = createAIProvider(apiKey, modelId);
 
@@ -79,6 +83,23 @@ export async function POST(request: Request) {
 
     const courses = [];
 
+    // OER Parallel Fetch (Scrape learning materials based on program title/sector)
+    console.log(`[generate] Fetching educational materials for "${programTitle || sectorName}"...`);
+    const oerQuery = encodeURIComponent(programTitle || sectorName);
+
+    // Fire OER scrapers in parallel but don't strictly block if they fail
+    const [openstaxRes, merlotRes, oasisRes] = await Promise.allSettled([
+      searchOpenStax({ subject: oerQuery }).catch(() => null),
+      searchMerlot({ query: oerQuery }).catch(() => []),
+      searchOasis({ query: oerQuery }).catch(() => [])
+    ]);
+
+    const oerContext = `
+OPENSTAX TEXTBOOKS: ${openstaxRes.status === "fulfilled" && openstaxRes.value ? JSON.stringify(openstaxRes.value) : "Unavailable"}
+MERLOT RESOURCES: ${merlotRes.status === "fulfilled" && merlotRes.value ? JSON.stringify(merlotRes.value) : "Unavailable"}
+OASIS RESOURCES: ${oasisRes.status === "fulfilled" && oasisRes.value ? JSON.stringify(oasisRes.value) : "Unavailable"}
+`;
+
     for (const dIdx of directionsToGenerate) {
       const direction = TRAINING_DIRECTIONS[dIdx];
       const weight = weights?.[dIdx] ?? 1 / TRAINING_DIRECTIONS.length;
@@ -100,7 +121,8 @@ export async function POST(request: Request) {
         weight,
         topics,
         relevantPapers,
-        sectorDescription
+        sectorDescription,
+        oerContext
       );
 
       const rawResponse = await provider.generate({
@@ -118,7 +140,8 @@ export async function POST(request: Request) {
           jsonStr = jsonStr.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
         }
 
-        const courseData = JSON.parse(jsonStr);
+        const sanitizedStr = jsonStr.replace(/[\n\r\t]/g, " ");
+        const courseData = JSON.parse(sanitizedStr);
         const validated = CourseOutlineSchema.parse(courseData);
         courses.push(validated);
       } catch (parseError) {

@@ -94,7 +94,8 @@ async function fetchAllGeminiModels(apiKey: string): Promise<GeminiModel[]> {
 }
 
 /**
- * Fetch and rank all Gemini models. Throws on API errors.
+ * Fetch and rank all Gemini models, strictly filtering for Gemini 3.1 Pro or later.
+ * Throws on API errors or if no 3.1+ models are found.
  * Returns the full ranked list of model IDs (best first).
  */
 export async function resolveGeminiModelList(apiKey: string): Promise<string[]> {
@@ -113,22 +114,37 @@ export async function resolveGeminiModelList(apiKey: string): Promise<string[]> 
     .filter((m) => m.parsed !== null);
 
   console.log(
-    `[model-resolver] Gemini: ${allModels.length} total, ${generative.length} generative, ${parsed.length} parsed:`,
-    parsed.map((m) => `${m.parsed!.id} (v${m.parsed!.version}, tier=${m.parsed!.tier}, variant="${m.parsed!.variant}")`).join(", ")
+    `[model-resolver] Gemini: ${allModels.length} total, ${generative.length} generative, ${parsed.length} parsed:`
   );
 
+  // Filter for models that are version >= 31 (Gemini 3.1)
   const ranked = parsed
-    .filter((m) => !m.parsed!.variant.includes("thinking") && !m.parsed!.variant.includes("lite"))
+    .filter((m) => m.parsed!.version >= 31)
     .sort((a, b) => {
       const ap = a.parsed!, bp = b.parsed!;
+
+      // 1. Highest version first (e.g., 3.2 > 3.1)
       if (ap.version !== bp.version) return bp.version - ap.version;
+
+      // 2. Highest tier first (e.g., pro > flash)
       if (ap.tier !== bp.tier) return bp.tier - ap.tier;
-      if (ap.variant === "" && bp.variant !== "") return -1;
-      if (ap.variant !== "" && bp.variant === "") return 1;
-      return 0;
+
+      // 3. For 3.1, prefer Pro over anything else if tier logic didn't catch it
+      const aIsPro = a.name.includes("pro");
+      const bIsPro = b.name.includes("pro");
+      if (aIsPro && !bIsPro) return -1;
+      if (!aIsPro && bIsPro) return 1;
+
+      // 4. Stable vs Preview variants - prefer latest dates/previews if stable isn't there
+      // Simple alphabetic sort on name (preview vs experimental vs stable)
+      return b.name.localeCompare(a.name);
     });
 
-  console.log(`[model-resolver] Gemini: top ranked: ${ranked.slice(0, 5).map(m => m.parsed!.id).join(", ")}`);
+  if (ranked.length === 0) {
+    throw new Error("Gemini 3.1 Pro (or later) is required but was not found on your API key.");
+  }
+
+  console.log(`[model-resolver] Gemini 3.1+ top ranked: ${ranked.slice(0, 5).map(m => m.parsed!.id).join(", ")}`);
   return ranked.map((m) => m.parsed!.id);
 }
 

@@ -89,7 +89,8 @@ export function buildCourseOverviewPrompt(
   weight: number,
   topics: TopicInfo[],
   papers: Paper[],
-  sectorKnowledge: string
+  sectorKnowledge: string,
+  oerContext: string = ""
 ): string {
   const direction = TRAINING_DIRECTIONS[directionIndex];
   const relevantTopics = topics
@@ -118,6 +119,9 @@ ${paperList}
 
 SECTOR KNOWLEDGE:
 ${sectorKnowledge}
+
+OER (OPEN EDUCATIONAL RESOURCES) CONTEXT:
+${oerContext}
 
 Generate a JSON object with this exact structure:
 {
@@ -349,3 +353,50 @@ NOTES:
 
   return { systemPrompt, userPrompt };
 }
+
+/**
+ * Prompt for LLM-based Topic Modeling.
+ * This completely replaces the need for the Python BERTopic script by using Gemini's
+ * massive context window and strong semantic reasoning to group papers into topics.
+ */
+export function getTopicModelingPrompt(
+  papers: Pick<Paper, "id" | "title" | "abstract">[],
+  targetNumberOfTopics?: number | null
+): { systemPrompt: string; userPrompt: string } {
+  const systemPrompt = `You are an expert academic taxonomy AI and data scientist.
+Your task is to perform Zero-Shot Topic Modeling on a collection of academic papers.
+You will read the provided list of papers (Title + Abstract) and group them into distinct, semantically coherent topics.
+
+Follow these rules for topic creation:
+1. Topics should represent distinct sub-fields, methodologies, or thematic clusters present in the data.
+2. Group highly related papers together.
+3. If a paper does not fit clearly into any major topic, assign it to topicNumber -1 (the outlier/noise topic).
+4. Topic Names must be short, lowercase snake_case strings summarizing the topic (e.g., "0_machine_learning_ai", "1_sustainability_policy").
+5. The representation array must contain 5-10 single words or short phrases that strongly characterize the topic.
+6. Topic numbers should start at 0 and increment sequentially.
+7. YOU MUST RETURN EXACTLY ONE VALID JSON OBJECT MATCHING THE REQUESTED SCHEMA. DO NOT output markdown blocks (\`\`\`json). Just the raw JSON.`;
+
+  const paperListStr = papers.map((p, index) =>
+    `--- PAPER [Index: ${index}, ID: ${p.id}] ---\nTITLE: ${p.title}\nABSTRACT: ${p.abstract || "N/A"}`
+  ).join("\n\n");
+
+  const topicsGuidance = targetNumberOfTopics
+    ? `Please aim to extract approximately ${targetNumberOfTopics} distinct topics (excluding the -1 outlier topic).`
+    : `Determine the optimal number of topics automatically based on the semantic diversity of the papers. Aim for 4 to 12 distinct topics depending on the data.`;
+
+  const userPrompt = `I have provided ${papers.length} academic papers below.
+
+YOUR TASK:
+Group these papers into distinct topics based on semantic similarity of their titles and abstracts.
+${topicsGuidance}
+
+Wait, before you start, remeber to assign *every single provided paper ID* to a topicNumber in the \`papers_with_topics\` array. No paper from the input list should be missing from your output mapping.
+
+PAPERS TO ANALYZE:
+${paperListStr}
+
+Respond with strictly valid JSON matching the TOPIC_MODELING_SCHEMA.`;
+
+  return { systemPrompt, userPrompt };
+}
+

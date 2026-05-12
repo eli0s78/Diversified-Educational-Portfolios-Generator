@@ -60,6 +60,61 @@ export function buildAnalysisSchema(topicNumbers: number[]) {
 }
 
 /**
+ * Build the Gemini structured output schema for Topic Modeling.
+ * Replaces the BERTopic Python script JSON output.
+ */
+export const TOPIC_MODELING_SCHEMA = {
+  type: SchemaType.OBJECT,
+  properties: {
+    topics: {
+      type: SchemaType.ARRAY,
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          topicNumber: {
+            type: SchemaType.INTEGER,
+            description: "Unique integer ID for the topic. Use -1 for papers that are outliers/do not fit any clear topic.",
+          },
+          count: {
+            type: SchemaType.INTEGER,
+            description: "Number of papers assigned to this topic."
+          },
+          name: {
+            type: SchemaType.STRING,
+            description: "A short, descriptive snake_case name for the topic, e.g. '0_machine_learning_ai'"
+          },
+          representation: {
+            type: SchemaType.ARRAY,
+            items: { type: SchemaType.STRING }
+          },
+          representativeDocs: {
+            type: SchemaType.ARRAY,
+            items: { type: SchemaType.STRING }
+          },
+          rarityLabel: {
+            type: SchemaType.STRING,
+            description: "Must be exactly one of: COMMON, RARE, NO_TOPIC (for outliers).",
+          }
+        },
+        required: ["topicNumber", "count", "name", "representation", "representativeDocs", "rarityLabel"],
+      }
+    },
+    papers_with_topics: {
+      type: SchemaType.ARRAY,
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          id: { type: SchemaType.STRING },
+          topicNumber: { type: SchemaType.INTEGER }
+        },
+        required: ["id", "topicNumber"]
+      }
+    }
+  },
+  required: ["topics", "papers_with_topics"]
+};
+
+/**
  * Gemini structured output schema for a single course outline.
  * Matches CourseOutlineSchema from portfolio-types.ts.
  */

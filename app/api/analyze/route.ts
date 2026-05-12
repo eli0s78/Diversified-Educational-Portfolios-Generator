@@ -4,6 +4,7 @@ import { buildAnalysisPrompt } from "@/lib/ai/prompts";
 import { buildAnalysisSchema } from "@/lib/ai/gemini-schemas";
 import type { TopicInfo, AnalysisResult } from "@/lib/engine/portfolio-types";
 import { TRAINING_DIRECTIONS } from "@/lib/engine/portfolio-types";
+import { getServerGeminiApiKey, getServerGeminiModelId } from "@/lib/server-config";
 
 // Allow execution for up to 60 seconds (maximum for Vercel Hobby Free Tier)
 export const maxDuration = 60;
@@ -15,14 +16,10 @@ export async function POST(request: Request) {
       topics,
       reportTexts = [],
       language = "en",
-      apiKey,
-      modelId,
     } = body as {
       topics: TopicInfo[];
       reportTexts: string[];
       language: "en" | "el";
-      apiKey?: string;
-      modelId?: string;
     };
 
     if (!topics || !Array.isArray(topics) || topics.length === 0) {
@@ -32,18 +29,16 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: "API key is required. Please provide your Gemini API key in Settings." },
-        { status: 400 }
-      );
-    }
+    // Use server-side API key (secure - never exposed to client)
+    const apiKey = getServerGeminiApiKey();
+    const modelId = getServerGeminiModelId();
 
     const provider = createAIProvider(apiKey, modelId);
 
     // Truncate massive PDF texts to heavily reduce AI context window and inference time,
     // avoiding the strict 60-second Vercel Hobby tier timeout.
-    const TRUNCATION_LIMIT = 15000;
+    // Increased to 60KB to ensure full sector reports fit without losing critical details.
+    const TRUNCATION_LIMIT = 60000;
     const truncatedReports = reportTexts.map(text =>
       text.length > TRUNCATION_LIMIT ? text.substring(0, TRUNCATION_LIMIT) + "\n...[TRUNCATED FOR LENGTH]" : text
     );
@@ -64,7 +59,6 @@ export async function POST(request: Request) {
     const rawResponse = await provider.generate({
       systemPrompt,
       userPrompt,
-      maxTokens: 8192,
       responseSchema,
     });
 
@@ -74,7 +68,8 @@ export async function POST(request: Request) {
       jsonStr = jsonStr.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
     }
 
-    const analysisData = JSON.parse(jsonStr) as AnalysisResult;
+    const sanitizedStr = jsonStr.replace(/[\n\r\t]/g, " ");
+    const analysisData = JSON.parse(sanitizedStr) as AnalysisResult;
 
     // Validate and clamp affinity matrix
     const numDirections = TRAINING_DIRECTIONS.length;

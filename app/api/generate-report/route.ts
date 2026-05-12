@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAIProvider } from "@/lib/ai/providers";
-import { getSettings } from "@/lib/project-manager";
+import { getServerGeminiApiKey, getServerGeminiModelId } from "@/lib/server-config";
 import {
   getSectorDefinitionPrompt,
   getExogenousForcesPrompt,
@@ -23,12 +23,32 @@ import type {
 export const runtime = "nodejs";
 export const maxDuration = 300; // 5 minutes
 
+/**
+ * Robustly parses AI-generated JSON, sanitizing common LLM hallucinations
+ * like unescaped newlines/tabs that break the standard JSON parser.
+ */
+function parseRawJsonResponse<T>(rawText: string, sectionName: string): T {
+  let cleaned = rawText.trim();
+  if (cleaned.startsWith("```")) {
+    cleaned = cleaned.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "");
+  }
+  // Sanitize unescaped literals
+  cleaned = cleaned.replace(/[\n\r\t]/g, " ");
+
+  try {
+    return JSON.parse(cleaned) as T;
+  } catch (err) {
+    console.error(`[generate-report] JSON Parse Error in ${sectionName}. Raw text snippet:`, rawText.substring(0, 500));
+    throw new Error(`Failed to parse AI response for ${sectionName}. Model returned invalid JSON.`);
+  }
+}
+
 interface GenerateReportRequest {
   occupation: OccupationTaxonomy;
   topics: TopicInfo[];
   papers: AcademicPaper[];
   labor_market_data: LaborMarketData;
-  sector_trends: SectorTrendsData;
+  sector_trends?: SectorTrendsData | null; // Optional - may fail if API keys not configured
   language: "en" | "el";
 }
 
@@ -39,24 +59,36 @@ export async function POST(request: NextRequest) {
     const body: GenerateReportRequest = await request.json();
     const { occupation, topics, papers, labor_market_data, sector_trends, language = "en" } = body;
 
-    if (!occupation || !topics || !papers || !labor_market_data || !sector_trends) {
+    if (!occupation || !topics || !papers || !labor_market_data) {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { error: "Missing required fields: occupation, topics, papers, labor_market_data" },
         { status: 400 }
       );
     }
 
-    // Get API key from settings
-    const settings = getSettings();
-    if (!settings.apiKey) {
-      return NextResponse.json(
-        { error: "Gemini API key not configured in settings" },
-        { status: 400 }
-      );
-    }
+    // Use empty sector_trends if not provided (API may have failed)
+    const safeSectorTrends = sector_trends || {
+      occupation: occupation.input,
+      technologies: [],
+      exogenous_forces: {
+        social: [],
+        technological: [],
+        environmental: [],
+      },
+      trends_summary: "No external trend data available.",
+      news_highlights: [],
+      metadata: {
+        data_sources: [],
+        collection_date: new Date().toISOString(),
+      },
+    };
+
+    // Use server-side API key (secure - never exposed to client)
+    const apiKey = getServerGeminiApiKey();
+    const modelId = getServerGeminiModelId();
 
     // Create AI provider (will use Gemini 3.1 Pro or best available, temp 1.0)
-    const ai = createAIProvider(settings.apiKey);
+    const ai = createAIProvider(apiKey, modelId);
 
     console.log(`[generate-report] Generating ${language.toUpperCase()} report for: ${occupation.input}`);
 
@@ -69,38 +101,35 @@ export async function POST(request: NextRequest) {
     const sectorDefResponse = await ai.generate({
       systemPrompt: "You are a professional labor market analyst generating structured sector reports.",
       userPrompt: sectorDefPrompt,
-      maxTokens: 2048,
     });
 
-    const sectorDef = JSON.parse(sectorDefResponse);
+    const sectorDef = parseRawJsonResponse<any>(sectorDefResponse, "Sector Definition");
 
     // ============================================================
     // SECTION 2: Exogenous Forces
     // ============================================================
     console.log("[generate-report] Generating exogenous forces...");
-    const forcesPrompt = getExogenousForcesPrompt(occupation, sector_trends, language);
+    const forcesPrompt = getExogenousForcesPrompt(occupation, safeSectorTrends, language);
 
     const forcesResponse = await ai.generate({
       systemPrompt: "You are a professional labor market analyst analyzing external forces affecting occupations.",
       userPrompt: forcesPrompt,
-      maxTokens: 2048,
     });
 
-    const exogenousForces: ExogenousForces = JSON.parse(forcesResponse);
+    const exogenousForces = parseRawJsonResponse<ExogenousForces>(forcesResponse, "Exogenous Forces");
 
     // ============================================================
     // SECTION 3: Technology Catalog
     // ============================================================
     console.log("[generate-report] Generating technology catalog...");
-    const techPrompt = getTechnologyCatalogPrompt(occupation, sector_trends, language);
+    const techPrompt = getTechnologyCatalogPrompt(occupation, safeSectorTrends, language);
 
     const techResponse = await ai.generate({
       systemPrompt: "You are a technology analyst cataloging tools and systems for professional occupations.",
       userPrompt: techPrompt,
-      maxTokens: 3072,
     });
 
-    const technologies: Technology[] = JSON.parse(techResponse);
+    const technologies = parseRawJsonResponse<Technology[]>(techResponse, "Technology Catalog");
 
     // ============================================================
     // SECTION 4: Labor Market Structure
@@ -111,24 +140,22 @@ export async function POST(request: NextRequest) {
     const laborResponse = await ai.generate({
       systemPrompt: "You are an employment analyst summarizing labor market conditions and workforce dynamics.",
       userPrompt: laborPrompt,
-      maxTokens: 2048,
     });
 
-    const laborSummary = JSON.parse(laborResponse);
+    const laborSummary = parseRawJsonResponse<any>(laborResponse, "Labor Market Summary");
 
     // ============================================================
     // SECTION 5: Future Scenarios
     // ============================================================
     console.log("[generate-report] Generating future scenarios...");
-    const scenariosPrompt = getFutureScenariosPrompt(occupation, topics, sector_trends, language);
+    const scenariosPrompt = getFutureScenariosPrompt(occupation, topics, safeSectorTrends, language);
 
     const scenariosResponse = await ai.generate({
       systemPrompt: "You are a futurist creating plausible scenarios for occupational evolution.",
       userPrompt: scenariosPrompt,
-      maxTokens: 4096,
     });
 
-    const scenarios: FutureScenario[] = JSON.parse(scenariosResponse);
+    const scenarios = parseRawJsonResponse<FutureScenario[]>(scenariosResponse, "Future Scenarios");
 
     // ============================================================
     // Assemble Final Report
@@ -183,7 +210,7 @@ export async function POST(request: NextRequest) {
         generation_time_ms: duration_ms,
         language,
         sections_generated: 5,
-        model_used: "gemini" + (settings.verifiedModel ? ` (${settings.verifiedModel})` : ""),
+        model_used: `gemini (${modelId})`,
       },
     });
   } catch (error) {

@@ -16,7 +16,7 @@ export interface AIProvider {
 class GeminiProvider implements AIProvider {
   private client: GoogleGenerativeAI;
   private apiKey: string;
-  private maxRetries = 3;
+  private maxRetries = 5;
   private resolvedModelId: string | null = null;
 
   constructor(apiKey: string, modelId?: string) {
@@ -44,7 +44,7 @@ class GeminiProvider implements AIProvider {
       responseSchema?: ResponseSchema;
     } = {
       temperature: 1.0,
-      maxOutputTokens: params.maxTokens ?? 4096,
+      maxOutputTokens: params.maxTokens ?? 65536,
       responseMimeType: "application/json",
     };
 
@@ -64,12 +64,33 @@ class GeminiProvider implements AIProvider {
         return result.response.text();
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : String(err);
-        const isRateLimit = message.includes("429") || message.includes("Too Many Requests");
-        if (!isRateLimit || attempt === this.maxRetries) throw err;
+        const isRetryable =
+          message.includes("429") ||
+          message.includes("Too Many Requests") ||
+          message.includes("503") ||
+          message.includes("Service Unavailable") ||
+          message.includes("high demand") ||
+          message.includes("fetch failed") ||
+          message.includes("ECONNRESET") ||
+          message.includes("ETIMEDOUT");
 
+        if (!isRetryable || attempt === this.maxRetries) throw err;
+
+        // Base delay of 5 seconds, exponential backoff (5s, 10s, 20s, 40s...)
+        let delaySec = 5 * Math.pow(2, attempt);
+
+        // If the error explicitly gave a retry time, use it if it's longer
         const delayMatch = message.match(/retry in ([\d.]+)s/i);
-        const delaySec = delayMatch ? Math.ceil(parseFloat(delayMatch[1])) : 60;
-        console.log(`Gemini rate limited. Retrying in ${delaySec}s (attempt ${attempt + 1}/${this.maxRetries})...`);
+        if (delayMatch) {
+          delaySec = Math.max(delaySec, Math.ceil(parseFloat(delayMatch[1])));
+        }
+
+        const errorType = message.includes("503") ? "503 High Demand" :
+          message.includes("fetch failed") ? "Network Fetch Failed" :
+            message.includes("ECONNRESET") ? "Connection Reset" :
+              "429 Rate Limit";
+
+        console.log(`Gemini API issue (${errorType}). Retrying in ${delaySec}s (attempt ${attempt + 1}/${this.maxRetries})...`);
         await new Promise((resolve) => setTimeout(resolve, delaySec * 1000));
       }
     }
