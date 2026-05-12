@@ -27,7 +27,6 @@ import { parseRichContent, type RichBlock } from "@/lib/rich-text";
 import {
   getCurrentProject,
   saveProject,
-  getActiveProviderSettings,
 } from "@/lib/project-manager";
 import { useProject } from "@/lib/project-context";
 import { PageContainer } from "@/components/ui/PageContainer";
@@ -112,7 +111,6 @@ export default function CoursesPage() {
     setError(null);
     try {
       const project = getCurrentProject();
-      const active = getActiveProviderSettings();
 
       if (!project) {
         setError(t("no_project"));
@@ -154,8 +152,7 @@ export default function CoursesPage() {
           targetAudience: project.analysis.targetAudience,
           educationLevel: project.analysis.educationLevel || project.config.educationLevel,
           language: locale,
-          apiKey: active.apiKey || undefined,
-          modelId: active.verifiedModel || undefined,
+          // apiKey and modelId now handled server-side
         }),
       });
 
